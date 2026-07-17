@@ -7,7 +7,7 @@ import { collection, getDocs, query, orderBy, doc, setDoc } from 'firebase/fires
 import AuthModal from '@/lib/components/AuthModal';
 import { 
   Cpu, Terminal, List, ArrowRight, ShieldAlert, Sparkles, RefreshCw, 
-  Wrench, Plus, MonitorPlay, ShoppingCart, Code2, Download, Edit3
+  Wrench, Plus, MonitorPlay, ShoppingCart, Code2, Download, Edit3, Menu, X
 } from 'lucide-react';
 
 interface BOMItem { item: string; quantity: number; }
@@ -34,6 +34,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'code' | 'secondary' | 'wiring' | 'guide'>('code');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Responsive mobile state
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Synchronize Authentication State
   useEffect(() => {
@@ -84,6 +87,7 @@ export default function Home() {
     setData(null);
     setPrompt('');
     setModifyPrompt('');
+    setIsMobileSidebarOpen(false);
   };
 
   const resumeSession = (session: ChatSession) => {
@@ -93,6 +97,7 @@ export default function Home() {
     setPrompt('');
     setModifyPrompt('');
     setActiveTab('code');
+    setIsMobileSidebarOpen(false); // Autoclose sidebar on selection for mobile screens
   };
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -163,8 +168,16 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-mono selection:bg-cyan-500/30">
       
       {/* App Header Bar */}
-      <header className="h-16 border-b border-slate-900 px-6 flex items-center justify-between bg-slate-950 z-20">
+      <header className="h-16 border-b border-slate-900 px-6 flex items-center justify-between bg-slate-950 z-20 shrink-0">
         <div className="flex items-center gap-3">
+          {/* Mobile Hamburguer Toggle Button */}
+          <button 
+            type="button" 
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 md:hidden hover:text-cyan-400 transition"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
           <span className="font-black text-xs text-cyan-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded-md">⚡ CAI</span>
           <h1 className="text-lg font-black tracking-wider">CIRCUIT<span className="text-cyan-400">AI</span></h1>
         </div>
@@ -174,20 +187,47 @@ export default function Home() {
       </header>
 
       {/* Debugger Connection Anchor Check */}
-      <div className="bg-slate-900/40 px-6 py-1 text-[10px] text-slate-500 border-b border-slate-900">
+      <div className="bg-slate-900/40 px-6 py-1 text-[10px] text-slate-500 border-b border-slate-900 shrink-0">
         Database Status Monitor: {currentUser ? `🟢 Secure Link Established (UID: ${currentUser.uid.slice(0,6)}...)` : "🔴 Offline / Storage Intercept Mode Enabled"}
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         
-        {/* Navigation History Sidebar Component */}
-        <aside className="w-64 border-r border-slate-900 bg-slate-950/40 flex flex-col shrink-0 hidden md:flex">
-          <div className="p-4">
+        {/* ========================================================= */}
+        {/* MOBILE DIMMED BACKGROUND OVERLAY                          */}
+        {/* ========================================================= */}
+        {isMobileSidebarOpen && (
+          <div 
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden"
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* NAVIGATION HISTORY SIDEBAR (Responsive Mobile Drawer)    */}
+        {/* ========================================================= */}
+        <aside className={`
+          fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-900 bg-slate-950 p-4 transition-transform duration-350 ease-in-out
+          md:relative md:translate-x-0 md:bg-slate-950/40 md:z-10
+          ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        `}>
+          {/* Sidebar Mobile Title/Exit Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-900 mb-4 md:hidden">
+            <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">Project Workspace</span>
+            <button 
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="p-1 rounded-lg hover:bg-slate-900 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div>
             <button onClick={resetWorkspace} className="w-full h-10 border border-dashed border-slate-800 rounded-xl text-xs flex items-center justify-center gap-2 text-slate-400 hover:text-cyan-400 transition">
               <Plus className="h-3.5 w-3.5" /> New Project Thread
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto px-2 space-y-1">
+          <div className="flex-1 overflow-y-auto px-2 mt-4 space-y-1">
             {historySessions.map(s => (
               <button key={s.id} onClick={() => resumeSession(s)} className={`w-full px-3 py-2 rounded-xl text-left text-xs truncate transition ${currentSessionId === s.id ? 'bg-slate-900 text-cyan-400 border border-slate-800' : 'text-slate-400 hover:bg-slate-900/60'}`}>
                 📁 {s.title}
@@ -197,7 +237,7 @@ export default function Home() {
         </aside>
 
         {/* Primary Interactive Workspace Dashboard Console */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6 pb-24">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24">
           
           {/* Main Initial Generation Form Console Module */}
           {!data && (
@@ -223,7 +263,7 @@ export default function Home() {
               <div className="xl:col-span-8 space-y-4">
                 
                 <div className="flex items-center justify-between">
-                  <div className="flex border border-slate-900 bg-slate-950 p-1 rounded-xl max-w-xl overflow-x-auto">
+                  <div className="flex border border-slate-900 bg-slate-950 p-1 rounded-xl w-full max-w-full overflow-x-auto gap-1 scrollbar-none">
                     <button type="button" onClick={() => setActiveTab('code')} className={`px-4 py-1.5 text-xs uppercase rounded-lg transition shrink-0 ${activeTab === 'code' ? 'bg-slate-900 text-cyan-400' : 'text-slate-500'}`}>Primary Code</button>
                     
                     {data.secondary_code && (
@@ -286,24 +326,26 @@ export default function Home() {
                 )}
 
                 {/* Real-Time Live Revision Command Node Input */}
-                <form onSubmit={handleModify} className="bg-cyan-950/10 border border-cyan-900/30 p-4 rounded-2xl flex items-center gap-3">
-                  <div className="p-2 bg-cyan-900/20 rounded-lg text-cyan-500"><Edit3 className="h-5 w-5" /></div>
-                  <input 
-                    type="text" 
-                    value={modifyPrompt} 
-                    onChange={(e) => setModifyPrompt(e.target.value)} 
-                    placeholder="Modify this build (e.g., 'Add a buzzer', 'Switch GUI theme colors to Red')..." 
-                    className="flex-1 bg-transparent text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none"
-                    required
-                  />
-                  <button type="submit" disabled={modifying} className="px-4 py-2 bg-cyan-900/40 hover:bg-cyan-900/60 text-cyan-400 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2">
+                <form onSubmit={handleModify} className="bg-cyan-950/10 border border-cyan-900/30 p-4 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="p-2 bg-cyan-900/20 rounded-lg text-cyan-500 shrink-0"><Edit3 className="h-5 w-5" /></div>
+                    <input 
+                      type="text" 
+                      value={modifyPrompt} 
+                      onChange={(e) => setModifyPrompt(e.target.value)} 
+                      placeholder="Modify this build..." 
+                      className="flex-1 bg-transparent text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none min-w-0"
+                      required
+                    />
+                  </div>
+                  <button type="submit" disabled={modifying} className="px-4 py-2.5 bg-cyan-900/40 hover:bg-cyan-900/60 text-cyan-400 rounded-xl text-xs font-bold uppercase transition flex items-center justify-center gap-2 shrink-0">
                     {modifying ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : 'Update Build'}
                   </button>
                 </form>
 
                 {/* Video Resource Lookups with Safe MonitorPlay Icon Injection */}
                 {data.youtube_search_query && (
-                  <div className="bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl flex items-center justify-between gap-4">
+                  <div className="bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 bg-red-950/40 border border-red-900/50 rounded-xl text-red-400 shrink-0"><MonitorPlay className="h-5 w-5" /></div>
                       <div>
@@ -311,7 +353,7 @@ export default function Home() {
                         <p className="text-[11px] text-slate-500">Launch targeted video walk-through lookups.</p>
                       </div>
                     </div>
-                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(data.youtube_search_query)}`} target="_blank" rel="noopener noreferrer" className="h-9 px-4 bg-red-900/30 hover:bg-red-900/50 border border-red-800 text-red-200 text-xs rounded-xl flex items-center gap-1.5 transition shrink-0">
+                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(data.youtube_search_query)}`} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto h-9 px-4 bg-red-900/30 hover:bg-red-900/50 border border-red-800 text-red-200 text-xs rounded-xl flex items-center justify-center gap-1.5 transition shrink-0">
                       Open YouTube
                     </a>
                   </div>
