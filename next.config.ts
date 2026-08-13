@@ -3,11 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
-  // 1. Keep them external so the bundler doesn't break them
-  serverExternalPackages: ["firebase-admin", "jose", "jwks-rsa"],
+  // 1. Keep firebase-admin external but transpile jose/jwks-rsa for ESM compatibility
+  serverExternalPackages: ["firebase-admin"],
 
-  // 2. Transpile lucide-react to fix module resolution issues with Turbopack
-  transpilePackages: ["lucide-react"], 
+  // 2. Transpile packages with ESM/CommonJS compatibility issues
+  transpilePackages: ["lucide-react", "jose", "jwks-rsa"], 
 
   turbopack: {
     // Fix workspace root detection
