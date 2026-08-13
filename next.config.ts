@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
-  // 1. Keep firebase-admin external but transpile jose/jwks-rsa for ESM compatibility
-  serverExternalPackages: ["firebase-admin"],
+  // Remove serverExternalPackages to let Next.js handle ESM/CommonJS bundling properly
+  serverExternalPackages: [],
 
-  // 2. Transpile packages with ESM/CommonJS compatibility issues
+  // Transpile packages with ESM/CommonJS compatibility issues
   transpilePackages: ["lucide-react", "jose", "jwks-rsa"], 
 
   turbopack: {
