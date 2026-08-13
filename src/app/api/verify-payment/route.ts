@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   try {
     const user = await requireAuthUser(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature } =
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     if (!razorpay_subscription_id || !razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json(
         { success: false, error: 'Missing subscription verification details.' },
-        { status: 400 }
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       .digest('hex');
 
     if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json({ success: false, error: 'Invalid subscription signature.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Invalid subscription signature.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     await activateProSubscription(user.uid, {
@@ -48,12 +48,12 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       message: 'Subscription verified. CircuitAI Pro is active.',
-    });
+    }, { headers: { 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     console.error('[verify-payment] failed:', getErrorMessage(error));
     return NextResponse.json(
       { success: false, error: getErrorMessage(error) || 'Internal Server Error' },
-      { status: 500 }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

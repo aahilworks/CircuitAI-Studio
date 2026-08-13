@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 
   try {
     if (!verifyWebhookSignature(rawBody, signature)) {
-      return NextResponse.json({ error: 'Invalid webhook signature.' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid webhook signature.' }, { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     const payload = JSON.parse(rawBody) as RazorpayWebhookPayload;
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
     if (!userId) {
       console.warn('[razorpay-webhook] No user mapped for event:', event, subscriptionId);
-      return NextResponse.json({ received: true });
+      return NextResponse.json({ received: true }, { headers: { 'Content-Type': 'application/json' } });
     }
 
     const currentPeriodEnd = subscription?.current_end
@@ -116,9 +116,9 @@ export async function POST(request: Request) {
         break;
     }
 
-    return NextResponse.json({ received: true });
+    return NextResponse.json({ received: true }, { headers: { 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     console.error('[razorpay-webhook] failed:', getErrorMessage(error));
-    return NextResponse.json({ error: 'Webhook processing failed.' }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook processing failed.' }, { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

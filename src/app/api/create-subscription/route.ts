@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   try {
     const user = await requireAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized. Sign in and try again.' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized. Sign in and try again.' }, { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     const userRef = adminDb.collection('users').doc(user.uid);
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const userData = userDoc.data();
 
     if (hasActiveProAccess(userData)) {
-      return NextResponse.json({ error: 'You already have an active Pro subscription.' }, { status: 409 });
+      return NextResponse.json({ error: 'You already have an active Pro subscription.' }, { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
 
     const razorpay = getRazorpayClient();
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       subscription_id: subscription.id,
       status: subscription.status,
-    });
+    }, { headers: { 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     console.error('[create-subscription] failed:', getErrorMessage(error));
 
@@ -68,6 +68,6 @@ export async function POST(request: Request) {
       razorpayError?.message ||
       getErrorMessage(error);
 
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
