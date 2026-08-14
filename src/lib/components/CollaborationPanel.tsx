@@ -169,7 +169,9 @@ export default function CollaborationPanel({
         </div>
         {/* Debug info */}
         <div className="mt-3 p-2 bg-zinc-950 border border-zinc-800 rounded text-[10px] text-zinc-500">
-          <p>Debug: isPro={isPro}, sessionId={sessionId ? 'yes' : 'no'}, userId={userId ? 'yes' : 'no'}</p>
+          <p>Debug: isActive={String(isActive)}, isJoining={String(isJoining)}, isPro={String(isPro)}</p>
+          <p>SessionId: {debugInfo.sessionId || 'none'}</p>
+          <p>UserId: {debugInfo.userId || 'none'}</p>
         </div>
       </div>
     );
@@ -228,7 +230,7 @@ export default function CollaborationPanel({
         )}
         {/* Debug info */}
         <div className="mt-3 p-2 bg-zinc-950 border border-zinc-800 rounded text-[10px] text-zinc-500">
-          <p>Debug: isActive={isActive}, isJoining={isJoining}, isPro={isPro}</p>
+          <p>Debug: isActive={String(isActive)}, isJoining={String(isJoining)}, isPro={String(isPro)}</p>
           <p>SessionId: {debugInfo.sessionId || 'none'}</p>
           <p>UserId: {debugInfo.userId || 'none'}</p>
         </div>
