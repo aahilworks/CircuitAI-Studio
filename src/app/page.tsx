@@ -8,9 +8,9 @@ const highlights = [
     Icon: Sparkles,
   },
   {
-    title: 'Student Reports',
-    body: 'Create school-ready project documentation with aim, working principle, conclusion, and viva questions.',
-    Icon: FileText,
+    title: 'Pro Reports & Quiz',
+    body: 'School-ready documentation with timed viva practice, presentation slides, and teacher reports for Pro users.',
+    Icon: GraduationCap,
   },
   {
     title: 'Wiring Help',

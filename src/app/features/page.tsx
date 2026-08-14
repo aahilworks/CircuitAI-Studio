@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Bot, Cable, CheckCircle2, Code2, FileText, GraduationCap, PlayCircle, ShieldAlert, ShoppingCart, Wrench } from 'lucide-react';
+import { ArrowRight, Bot, Cable, CheckCircle2, Code2, Crown, FileText, GraduationCap, PlayCircle, ShieldAlert, ShoppingCart, Wrench } from 'lucide-react';
 
 const featureGroups = [
   {
@@ -54,6 +54,17 @@ const featureGroups = [
       'PDF / print report export for Pro',
     ],
     Icon: GraduationCap,
+  },
+  {
+    title: 'Pro Features',
+    features: [
+      'Timed viva practice quiz with scoring',
+      'Presentation slides with speaker notes',
+      'School-ready teacher reports',
+      'Unlimited AI generations and modifications',
+      'Unlimited saved project history',
+    ],
+    Icon: Crown,
   },
   {
     title: 'Workspace',
