@@ -22,7 +22,6 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const billingCycle = body.billingCycle || 'monthly';
-    const country = body.country || { code: 'IN', name: 'India', currency: 'INR', symbol: '₹' };
 
     const userRef = adminDb.collection('users').doc(user.uid);
     const userDoc = await userRef.get();
@@ -32,13 +31,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You already have an active Pro subscription.' }, { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Use Razorpay for all countries (currently only India plans available)
+    // Use Razorpay for India
     const razorpay = getRazorpayClient();
     const trialDays = getTrialDays();
     const startAt =
       trialDays > 0 ? Math.floor(Date.now() / 1000) + trialDays * 24 * 60 * 60 : undefined;
 
-    // Use India plans for all countries until international plans are approved
     const planId = billingCycle === 'yearly' ? getRazorpayYearlyPlanId() : getRazorpayPlanId();
     const product = billingCycle === 'yearly' ? 'circuitai_pro_yearly' : 'circuitai_pro_monthly';
     const totalCount = billingCycle === 'yearly' ? 1 : 12;
@@ -52,8 +50,6 @@ export async function POST(request: Request) {
         userId: user.uid,
         product,
         billingCycle,
-        countryCode: country.code,
-        currency: country.currency,
       },
     });
 
@@ -64,8 +60,6 @@ export async function POST(request: Request) {
         subscriptionPlanId: planId,
         subscriptionBillingCycle: billingCycle,
         subscriptionCreatedAt: new Date().toISOString(),
-        countryCode: country.code,
-        currency: country.currency,
       },
       { merge: true }
     );

@@ -39,7 +39,6 @@ const loadRazorpayScript = (): Promise<boolean> =>
 interface InitiateProSubscriptionOptions {
   currentUser: User;
   billingCycle?: 'monthly' | 'yearly';
-  country?: { code: string; name: string; currency: string; symbol: string };
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -47,7 +46,6 @@ interface InitiateProSubscriptionOptions {
 export async function initiateProSubscription({
   currentUser,
   billingCycle = 'monthly',
-  country,
   onSuccess,
   onError,
 }: InitiateProSubscriptionOptions): Promise<void> {
@@ -72,7 +70,7 @@ export async function initiateProSubscription({
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ billingCycle, country }),
+      body: JSON.stringify({ billingCycle }),
     });
 
     const subscriptionData = await subscriptionRes.json();
@@ -92,18 +90,17 @@ export async function initiateProSubscription({
     const isTestMode = razorpayKey.startsWith('rzp_test_');
     const isYearly = billingCycle === 'yearly';
     
-    // Use India pricing for all countries until international plans are approved
+    // Use India pricing
     const price = isYearly ? '₹6,999' : '₹999';
     const period = isYearly ? 'year' : 'month';
-    const countryName = country?.name || 'India';
 
     const razorpayInstance = new window.Razorpay({
       key: razorpayKey,
       subscription_id: subscriptionData.subscription_id,
       name: 'CircuitAI',
       description: isTestMode
-        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} (${countryName}) (Test Mode) — 2-day trial, then ${price}/${period}`
-        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} Subscription (${countryName}) — 2-day free trial, then ${price}/${period}`,
+        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — 2-day trial, then ${price}/${period}`
+        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} Subscription — 2-day free trial, then ${price}/${period}`,
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,

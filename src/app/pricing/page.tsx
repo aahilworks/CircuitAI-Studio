@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
 import AuthModal from '@/lib/components/AuthModal';
-import CountrySelector from '@/lib/components/CountrySelector';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
-import { ArrowRight, CheckCircle2, CreditCard, Crown, Globe, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
+import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
 
 const freeFeatures = [
   '5 AI projects per month',
@@ -43,8 +42,6 @@ export default function PricingPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
-  const [userCountry, setUserCountry] = useState<{ code: string; name: string; currency: string; symbol: string }>({ code: 'IN', name: 'India', currency: 'INR', symbol: '₹' });
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -60,19 +57,7 @@ export default function PricingPage() {
       }
 
       unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-        const userData = snapshot.data();
-        setIsProUser(snapshot.exists() ? hasActiveProAccess(userData) : false);
-        
-        // Load user's country preference
-        if (userData?.countryCode) {
-          const countryData = {
-            code: userData.countryCode,
-            name: userData.countryName || 'India',
-            currency: userData.currency || 'INR',
-            symbol: userData.currencySymbol || '₹',
-          };
-          setUserCountry(countryData);
-        }
+        setIsProUser(snapshot.exists() ? hasActiveProAccess(snapshot.data()) : false);
       });
 
       void user.getIdToken().then((token) =>
@@ -88,24 +73,6 @@ export default function PricingPage() {
     };
   }, []);
 
-  const handleCountrySelect = async (country: { code: string; name: string; currency: string; symbol: string }) => {
-    setUserCountry(country);
-    
-    // Save country preference to Firebase if user is logged in
-    if (currentUser) {
-      try {
-        await updateDoc(doc(db, 'users', currentUser.uid), {
-          countryCode: country.code,
-          countryName: country.name,
-          currency: country.currency,
-          currencySymbol: country.symbol,
-        });
-      } catch (error) {
-        console.error('Failed to save country preference:', error);
-      }
-    }
-  };
-
   const initiateCheckout = async () => {
     if (!currentUser) {
       setIsAuthModalOpen(true);
@@ -117,7 +84,6 @@ export default function PricingPage() {
     await initiateProSubscription({
       currentUser,
       billingCycle,
-      country: userCountry,
       onSuccess: (message) => alert(message),
       onError: (message) => alert(message),
     });
@@ -170,18 +136,6 @@ export default function PricingPage() {
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
             Free is enough to try CircuitAI. Pro is a subscription that unlocks serious student workflows: unlimited builds, unlimited saved history, reports, and advanced wiring.
           </p>
-          
-          {/* Country Selector */}
-          <div className="mt-6 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsCountrySelectorOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-teal-300 hover:border-teal-700 transition text-xs font-bold"
-            >
-              <Globe className="h-4 w-4" />
-              {userCountry.name} ({userCountry.currency})
-            </button>
-          </div>
           
           {/* Billing Cycle Toggle */}
           <div className="mt-8 flex items-center gap-3 sm:gap-4">
@@ -239,11 +193,6 @@ export default function PricingPage() {
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
                   2-day free trial, then billed {billingCycle === 'yearly' ? 'yearly for 1 year' : 'monthly for 12 months'}
                 </p>
-                {userCountry.code !== 'IN' && (
-                  <p className="mt-2 text-[10px] text-amber-400 bg-amber-950/30 border border-amber-800 px-2 py-1 rounded">
-                    International payments coming soon. Currently accepting India payments only.
-                  </p>
-                )}
               </div>
 
               <button type="button" onClick={initiateCheckout} disabled={isProcessingPayment || isProUser} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
@@ -290,12 +239,6 @@ export default function PricingPage() {
       </section>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} user={currentUser} />
-      <CountrySelector 
-        isOpen={isCountrySelectorOpen} 
-        onClose={() => setIsCountrySelectorOpen(false)} 
-        onCountrySelect={handleCountrySelect}
-        currentCountry={userCountry.code}
-      />
     </main>
   );
 }
