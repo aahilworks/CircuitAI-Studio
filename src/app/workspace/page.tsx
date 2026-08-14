@@ -518,23 +518,6 @@ export default function Home() {
       });
 
       void fetchSidebarHistory(user.uid);
-      
-      // Check for session parameter in URL for collaboration links
-      if (typeof window !== 'undefined') {
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionParam = urlParams.get('session');
-        if (sessionParam) {
-          console.log('[Workspace] Found session parameter in URL:', sessionParam);
-          setCurrentSessionId(sessionParam);
-          setShowCollaborationPanel(true);
-          // Try to load the session from history
-          const existingSession = historySessions.find(s => s.id === sessionParam);
-          if (existingSession) {
-            console.log('[Workspace] Loading existing session from history');
-            resumeSession(existingSession);
-          }
-        }
-      }
     });
 
     return () => {
@@ -542,6 +525,30 @@ export default function Home() {
       unsubscribeUserDoc?.();
     };
   }, [fetchSidebarHistory, resetWorkspace]);
+
+  // Handle URL parameter for collaboration links (separate effect to run after history is loaded)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentUser && historySessions.length > 0) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionParam = urlParams.get('session');
+      if (sessionParam) {
+        console.log('[Workspace] Found session parameter in URL:', sessionParam);
+        setCurrentSessionId(sessionParam);
+        setShowCollaborationPanel(true);
+        
+        // Try to load the session from history
+        const existingSession = historySessions.find(s => s.id === sessionParam);
+        if (existingSession) {
+          console.log('[Workspace] Loading existing session from history');
+          resumeSession(existingSession);
+        } else {
+          console.log('[Workspace] Session not found in history, but setting sessionId for collaboration');
+          // Set the sessionId even if not in history, for collaboration purposes
+          setCurrentSessionId(sessionParam);
+        }
+      }
+    }
+  }, [currentUser, historySessions]);
 
   const saveProjectToFirestore = async (userId: string, sessionId: string, project: ProjectData, messages: ChatMessage[] = []) => {
     try {
