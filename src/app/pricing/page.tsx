@@ -8,7 +8,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
-import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
 
 const freeFeatures = [
   '5 AI projects per month',
@@ -41,6 +41,7 @@ export default function PricingPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -103,10 +104,27 @@ export default function PricingPage() {
             <Link href="/pricing" className="text-teal-300">Pricing</Link>
             <Link href="/workspace" className="hover:text-teal-300 transition">Workspace</Link>
           </div>
-          <Link href="/workspace" className="h-9 px-4 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold uppercase flex items-center gap-2 transition">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden h-9 w-9 flex items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-teal-300 transition"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <Link href="/workspace" className="hidden h-9 px-4 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold uppercase items-center gap-2 transition md:flex">
             Open App <ArrowRight className="h-4 w-4" />
           </Link>
         </nav>
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 pt-4 border-t border-zinc-800 flex flex-col gap-4">
+            <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Features</Link>
+            <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Pricing</Link>
+            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Workspace</Link>
+            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+              Open App <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </header>
 
       <section className="bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_34rem)] px-4 py-14 md:px-8 md:py-20">
@@ -120,11 +138,11 @@ export default function PricingPage() {
           </p>
           
           {/* Billing Cycle Toggle */}
-          <div className="mt-8 flex items-center gap-4">
+          <div className="mt-8 flex items-center gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
-              className={`text-sm font-bold transition ${billingCycle === 'monthly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`text-xs sm:text-sm font-bold transition ${billingCycle === 'monthly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               Monthly
             </button>
@@ -134,12 +152,12 @@ export default function PricingPage() {
             <button
               type="button"
               onClick={() => setBillingCycle('yearly')}
-              className={`text-sm font-bold transition ${billingCycle === 'yearly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`text-xs sm:text-sm font-bold transition ${billingCycle === 'yearly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               Yearly
             </button>
             {billingCycle === 'yearly' && (
-              <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
+              <span className="text-[10px] sm:text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
                 Save 42%
               </span>
             )}

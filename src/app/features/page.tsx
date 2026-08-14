@@ -1,5 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bot, Cable, CheckCircle2, Code2, Crown, FileText, GraduationCap, PlayCircle, ShieldAlert, ShoppingCart, Wrench } from 'lucide-react';
+import { ArrowRight, Bot, Cable, CheckCircle2, Code2, Crown, FileText, GraduationCap, Menu, PlayCircle, ShieldAlert, ShoppingCart, Wrench, X } from 'lucide-react';
 
 const featureGroups = [
   {
@@ -80,6 +83,8 @@ const featureGroups = [
 ];
 
 export default function FeaturesPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-teal-500/30">
       <header className="border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 md:px-8">
@@ -93,10 +98,27 @@ export default function FeaturesPage() {
             <Link href="/pricing" className="hover:text-teal-300 transition">Pricing</Link>
             <Link href="/workspace" className="hover:text-teal-300 transition">Workspace</Link>
           </div>
-          <Link href="/workspace" className="h-9 px-4 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold uppercase flex items-center gap-2 transition">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden h-9 w-9 flex items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-teal-300 transition"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <Link href="/workspace" className="hidden h-9 px-4 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold uppercase items-center gap-2 transition md:flex">
             Open App <ArrowRight className="h-4 w-4" />
           </Link>
         </nav>
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 pt-4 border-t border-zinc-800 flex flex-col gap-4">
+            <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Features</Link>
+            <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Pricing</Link>
+            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Workspace</Link>
+            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+              Open App <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </header>
 
       <section className="bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_34rem)] px-4 py-14 md:px-8 md:py-20">
