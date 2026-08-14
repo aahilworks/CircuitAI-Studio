@@ -1019,6 +1019,7 @@ ${data.secondary_code}
             <Link href="/" className="hover:text-teal-300 transition">Home</Link>
             <Link href="/features" className="hover:text-teal-300 transition">Features</Link>
             <Link href="/pricing" className="hover:text-teal-300 transition">Pricing</Link>
+            <Link href="/dashboard" className="hover:text-teal-300 transition">Dashboard</Link>
           </nav>
         </div>
 

@@ -96,6 +96,7 @@ export default function FeaturesPage() {
           <div className="hidden items-center gap-6 text-xs font-bold text-zinc-500 md:flex">
             <Link href="/features" className="text-teal-300">Features</Link>
             <Link href="/pricing" className="hover:text-teal-300 transition">Pricing</Link>
+            <Link href="/dashboard" className="hover:text-teal-300 transition">Dashboard</Link>
             <Link href="/workspace" className="hover:text-teal-300 transition">Workspace</Link>
           </div>
           <button
@@ -113,6 +114,7 @@ export default function FeaturesPage() {
           <div className="md:hidden mt-4 pt-4 border-t border-zinc-800 flex flex-col gap-4">
             <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Features</Link>
             <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Pricing</Link>
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Dashboard</Link>
             <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Workspace</Link>
             <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
               Open App <ArrowRight className="h-4 w-4" />
