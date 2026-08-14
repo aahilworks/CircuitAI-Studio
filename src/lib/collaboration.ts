@@ -75,11 +75,12 @@ export class CollaborationManager {
     this.userId = userId;
 
     try {
-      const sessionDocRef = doc(db, 'collaboration', 'sessions', sessionId);
+      // Use proper Firestore path structure with even segments
+      const sessionDocRef = doc(db, 'collaborationSessions', sessionId);
       this.sessionDocRef = sessionDocRef;
 
       const userColor = getUserColor(userId);
-      const userDocRef = doc(db, 'collaboration', 'sessions', sessionId, 'users', userId);
+      const userDocRef = doc(db, 'collaborationSessions', sessionId, 'users', userId);
       this.userDocRef = userDocRef;
 
       console.log('[Collaboration] Checking if session exists...');
@@ -105,12 +106,9 @@ export class CollaborationManager {
       });
 
       console.log('[Collaboration] Setting up user listener...');
-      // Listen to users subcollection
-      const usersCollectionRef = doc(db, 'collaboration', 'sessions', sessionId);
-      this.usersCollectionRef = usersCollectionRef;
-      
+      // Listen to session document for user updates
       this.unsubscribeUsers = onSnapshot(
-        doc(db, 'collaboration', 'sessions', sessionId),
+        sessionDocRef,
         async (snapshot) => {
           try {
             const sessionData = snapshot.data();
@@ -120,7 +118,7 @@ export class CollaborationManager {
               this.notifyListeners();
             } else {
               // Try to get users from subcollection
-              const usersSnapshot = await getDoc(doc(db, 'collaboration', 'sessions', sessionId, 'users', userId));
+              const usersSnapshot = await getDoc(userDocRef);
               if (usersSnapshot.exists()) {
                 this.currentUsers = [usersSnapshot.data() as CollaborationUser];
                 console.log('[Collaboration] Users updated (subcollection):', this.currentUsers.length);
