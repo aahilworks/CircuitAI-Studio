@@ -30,8 +30,14 @@ export default function CollaborationPanel({
   const [isJoining, setIsJoining] = useState(false);
   const [shareLink, setShareLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({ sessionId, userId, isPro });
 
   const manager = getCollaborationManager();
+
+  // Update debug info when props change
+  useEffect(() => {
+    setDebugInfo({ sessionId, userId, isPro });
+  }, [sessionId, userId, isPro]);
 
   const joinSession = useCallback(async () => {
     console.log('[CollaborationPanel] joinSession called', { sessionId, userId, isPro });
@@ -161,6 +167,10 @@ export default function CollaborationPanel({
             <Crown className="h-4 w-4" /> Upgrade to Pro
           </button>
         </div>
+        {/* Debug info */}
+        <div className="mt-3 p-2 bg-zinc-950 border border-zinc-800 rounded text-[10px] text-zinc-500">
+          <p>Debug: isPro={isPro}, sessionId={sessionId ? 'yes' : 'no'}, userId={userId ? 'yes' : 'no'}</p>
+        </div>
       </div>
     );
   }
@@ -216,6 +226,12 @@ export default function CollaborationPanel({
             <p className="text-[10px] text-zinc-500 text-center">Free users can join existing sessions</p>
           </div>
         )}
+        {/* Debug info */}
+        <div className="mt-3 p-2 bg-zinc-950 border border-zinc-800 rounded text-[10px] text-zinc-500">
+          <p>Debug: isActive={isActive}, isJoining={isJoining}, isPro={isPro}</p>
+          <p>SessionId: {debugInfo.sessionId || 'none'}</p>
+          <p>UserId: {debugInfo.userId || 'none'}</p>
+        </div>
       </div>
     );
   }
