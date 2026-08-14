@@ -57,11 +57,23 @@ export default function CollaborationPanel({
 
   if (!isPro) {
     return (
-      <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-4">
-        <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
-          <Users className="h-4 w-4" /> Pro Feature
+      <div className="bg-zinc-900/60 border border-zinc-800 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+            <Users className="h-4 w-4 text-teal-300" /> Collaboration
+          </h3>
+          {onClose && (
+            <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
-        <p className="text-sm text-zinc-400">Real-time collaboration is available for Pro users only.</p>
+        <button
+          onClick={() => alert('Real-time collaboration is a Pro feature. Subscribe to unlock it.')}
+          className="w-full h-9 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-400 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+        >
+          <Users className="h-4 w-4" /> Enable Collaboration
+        </button>
       </div>
     );
   }

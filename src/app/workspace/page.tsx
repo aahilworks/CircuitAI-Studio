@@ -1074,29 +1074,27 @@ ${data.secondary_code}
             ))}
           </div>
 
-          {isProUser && (
-            <div className="mt-4 pt-4 border-t border-zinc-800">
-              <button
-                type="button"
-                onClick={() => setShowCollaborationPanel(!showCollaborationPanel)}
-                className="w-full h-9 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-xs flex items-center justify-center gap-2 text-zinc-400 hover:text-teal-300 transition"
-              >
-                <Users className="h-3.5 w-3.5" /> {showCollaborationPanel ? 'Hide' : 'Show'} Collaboration
-              </button>
-              
-              {showCollaborationPanel && (
-                <div className="mt-3">
-                  <CollaborationPanel
-                    sessionId={currentSessionId || undefined}
-                    userId={currentUser?.uid || undefined}
-                    userData={{ email: currentUser?.email || undefined, displayName: currentUser?.displayName || undefined }}
-                    isPro={isProUser}
-                    onClose={() => setShowCollaborationPanel(false)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
+          <div className="mt-4 pt-4 border-t border-zinc-800">
+            <button
+              type="button"
+              onClick={() => setShowCollaborationPanel(!showCollaborationPanel)}
+              className="w-full h-9 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-xs flex items-center justify-center gap-2 text-zinc-400 hover:text-teal-300 transition"
+            >
+              <Users className="h-3.5 w-3.5" /> {showCollaborationPanel ? 'Hide' : 'Show'} Collaboration
+            </button>
+            
+            {showCollaborationPanel && (
+              <div className="mt-3">
+                <CollaborationPanel
+                  sessionId={currentSessionId || undefined}
+                  userId={currentUser?.uid || undefined}
+                  userData={{ email: currentUser?.email || undefined, displayName: currentUser?.displayName || undefined }}
+                  isPro={isProUser}
+                  onClose={() => setShowCollaborationPanel(false)}
+                />
+              </div>
+            )}
+          </div>
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.10),transparent_34rem)]">
