@@ -570,9 +570,13 @@ export default function Home() {
     if (!isModification) setCurrentSessionId(sessionId);
 
     try {
+      const token = await currentUser.getIdToken();
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           prompt: queryToSend,
           board,
