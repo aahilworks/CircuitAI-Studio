@@ -32,17 +32,24 @@ export default function CollaborationPanel({
   const manager = getCollaborationManager();
 
   const joinSession = useCallback(async () => {
-    if (!sessionId || !userId || !isPro) return;
+    console.log('[CollaborationPanel] joinSession called', { sessionId, userId, isPro });
+    
+    if (!sessionId || !userId || !isPro) {
+      console.error('[CollaborationPanel] Missing required data', { sessionId, userId, isPro });
+      return;
+    }
     
     setIsJoining(true);
     try {
+      console.log('[CollaborationPanel] Calling manager.joinSession...');
       const success = await manager.joinSession(sessionId, userId, userData || {}, isPro);
+      console.log('[CollaborationPanel] joinSession result:', success);
       setIsActive(success);
       if (!success) {
-        console.error('[Collaboration] Failed to join session');
+        console.error('[CollaborationPanel] Failed to join session');
       }
     } catch (error) {
-      console.error('[Collaboration] Error joining session:', error);
+      console.error('[CollaborationPanel] Error joining session:', error);
     } finally {
       setIsJoining(false);
     }

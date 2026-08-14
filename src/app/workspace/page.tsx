@@ -127,12 +127,19 @@ interface QuizQuestion {
   explanation: string;
 }
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}
+
 interface ChatSession {
   id: string;
   title: string;
   target_board: string;
   lastUpdated: string;
   projectData: ProjectData | null;
+  messages: ChatMessage[];
 }
 
 interface GenerateErrorPayload {
@@ -165,6 +172,7 @@ const QUIZ_DURATION_SECONDS = 10 * 60;
 
 export default function Home() {
   const [prompt, setPrompt] = useState('');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [modifyPrompt, setModifyPrompt] = useState('');
   const [board, setBoard] = useState('Arduino Uno');
   const [loading, setLoading] = useState(false);
@@ -523,7 +531,7 @@ export default function Home() {
     };
   }, [fetchSidebarHistory, resetWorkspace]);
 
-  const saveProjectToFirestore = async (userId: string, sessionId: string, project: ProjectData) => {
+  const saveProjectToFirestore = async (userId: string, sessionId: string, project: ProjectData, messages: ChatMessage[] = []) => {
     try {
       const docRef = doc(db, 'users', userId, 'chatSessions', sessionId);
       await setDoc(docRef, {
@@ -532,6 +540,7 @@ export default function Home() {
         target_board: project.target_board,
         lastUpdated: new Date().toISOString(),
         projectData: project,
+        messages: messages,
       }, { merge: true });
 
       await setDoc(doc(db, 'users', userId), { lastActive: new Date().toISOString() }, { merge: true });
@@ -550,6 +559,7 @@ export default function Home() {
     setActiveTab('code');
     setIsMobileSidebarOpen(false);
     resetQuiz();
+    setChatMessages(session.messages || []);
   };
 
   const executeAIBuild = async (queryToSend: string, isModification: boolean) => {
@@ -596,7 +606,18 @@ export default function Home() {
       setData(result);
       setActiveTab('code');
       resetQuiz();
-      await saveProjectToFirestore(currentUser.uid, sessionId, result);
+      
+      // Add assistant message to chat history
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: isModification 
+          ? `Modified project: ${result.project_title}` 
+          : `Generated project: ${result.project_title}`,
+        timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, assistantMessage]);
+      
+      await saveProjectToFirestore(currentUser.uid, sessionId, result, chatMessages);
     } catch (error) {
       console.error(error);
       alert(error instanceof Error ? error.message : 'Compilation or save pipeline execution failure.');
@@ -609,12 +630,30 @@ export default function Home() {
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
+    
+    // Add user message to chat history
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: prompt,
+      timestamp: Date.now(),
+    };
+    setChatMessages(prev => [...prev, userMessage]);
+    
     await executeAIBuild(prompt, false);
+    setPrompt('');
   };
 
   const handleModify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!modifyPrompt.trim() || !data) return;
+
+    // Add user modification message to chat history
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: `Modify: ${modifyPrompt}`,
+      timestamp: Date.now(),
+    };
+    setChatMessages(prev => [...prev, userMessage]);
 
     const contextPrompt = `I have an existing project called "${data.project_title}".
 Please modify this complete robotics build with these updates: ${modifyPrompt}.
@@ -1078,28 +1117,30 @@ ${data.secondary_code}
             ))}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-zinc-800">
-            <button
-              type="button"
-              onClick={() => setShowCollaborationPanel(!showCollaborationPanel)}
-              className="w-full h-9 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-xs flex items-center justify-center gap-2 text-zinc-400 hover:text-teal-300 transition"
-            >
-              <Users className="h-3.5 w-3.5" /> {showCollaborationPanel ? 'Hide' : 'Show'} Collaboration
-            </button>
-            
-            {showCollaborationPanel && (
-              <div className="mt-3">
-                <CollaborationPanel
-                  sessionId={currentSessionId || undefined}
-                  userId={currentUser?.uid || undefined}
-                  userData={{ email: currentUser?.email || undefined, displayName: currentUser?.displayName || undefined }}
-                  isPro={isProUser}
-                  currentUser={currentUser}
-                  onClose={() => setShowCollaborationPanel(false)}
-                />
-              </div>
-            )}
-          </div>
+          {data && (
+            <div className="mt-4 pt-4 border-t border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setShowCollaborationPanel(!showCollaborationPanel)}
+                className="w-full h-9 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-xs flex items-center justify-center gap-2 text-zinc-400 hover:text-teal-300 transition"
+              >
+                <Users className="h-3.5 w-3.5" /> {showCollaborationPanel ? 'Hide' : 'Show'} Collaboration
+              </button>
+              
+              {showCollaborationPanel && (
+                <div className="mt-3">
+                  <CollaborationPanel
+                    sessionId={currentSessionId || undefined}
+                    userId={currentUser?.uid || undefined}
+                    userData={{ email: currentUser?.email || undefined, displayName: currentUser?.displayName || undefined }}
+                    isPro={isProUser}
+                    currentUser={currentUser}
+                    onClose={() => setShowCollaborationPanel(false)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.10),transparent_34rem)]">

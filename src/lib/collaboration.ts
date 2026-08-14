@@ -58,34 +58,43 @@ export class CollaborationManager {
     userData: { email?: string; displayName?: string },
     isPro: boolean
   ): Promise<boolean> {
+    console.log('[Collaboration] joinSession called', { sessionId, userId, isPro });
+    
     if (!isPro) {
       console.warn('[Collaboration] Pro access required for collaboration');
+      return false;
+    }
+
+    if (!sessionId || !userId) {
+      console.error('[Collaboration] Missing required parameters', { sessionId, userId });
       return false;
     }
 
     this.sessionId = sessionId;
     this.userId = userId;
 
-    const sessionRef = ref(rtdb, `collaboration/sessions/${sessionId}`);
-    this.sessionRef = sessionRef;
-
-    const userColor = getUserColor(userId);
-    const userRef = ref(rtdb, `collaboration/sessions/${sessionId}/users/${userId}`);
-    this.userRef = userRef;
-
     try {
-      // Check if session exists and is active
+      const sessionRef = ref(rtdb, `collaboration/sessions/${sessionId}`);
+      this.sessionRef = sessionRef;
+
+      const userColor = getUserColor(userId);
+      const userRef = ref(rtdb, `collaboration/sessions/${sessionId}/users/${userId}`);
+      this.userRef = userRef;
+
+      console.log('[Collaboration] Checking if session exists...');
       const sessionSnapshot = await get(sessionRef);
       if (!sessionSnapshot.exists()) {
-        // Create new session
+        console.log('[Collaboration] Creating new session...');
         await set(sessionRef, {
           ownerId: userId,
           isActive: true,
           createdAt: Date.now(),
         });
+      } else {
+        console.log('[Collaboration] Session already exists');
       }
 
-      // Add user to session
+      console.log('[Collaboration] Adding user to session...');
       await set(userRef, {
         uid: userId,
         email: userData.email,
@@ -94,22 +103,25 @@ export class CollaborationManager {
         lastActive: Date.now(),
       });
 
-      // Set up disconnect handler
+      console.log('[Collaboration] Setting up disconnect handler...');
       onDisconnect(userRef).remove();
 
-      // Listen to session changes and populate users
+      console.log('[Collaboration] Setting up user listener...');
       const usersRef = ref(rtdb, `collaboration/sessions/${sessionId}/users`);
       this.usersRef = usersRef;
       
       onValue(usersRef, (snapshot) => {
         const usersData = snapshot.val() || {};
         this.currentUsers = Object.values(usersData) as CollaborationUser[];
+        console.log('[Collaboration] Users updated:', this.currentUsers.length);
         this.notifyListeners();
       });
 
+      console.log('[Collaboration] Session joined successfully');
       return true;
     } catch (error) {
       console.error('[Collaboration] Error joining session:', error);
+      this.cleanup();
       return false;
     }
   }
