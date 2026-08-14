@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { hasActiveProAccess } from '@/lib/proAccess';
 import {
   ArrowRight,
   Cable,
@@ -17,6 +18,7 @@ import {
   ShoppingCart,
   UploadCloud,
   Wrench,
+  Lock,
 } from 'lucide-react';
 
 interface BOMItem {
@@ -109,6 +111,11 @@ export default async function SharePage({ params }: SharePageProps) {
   const project = session?.projectData as ProjectData | undefined;
 
   if (!project) notFound();
+
+  // Security: Check if project owner has pro access to determine which features to show
+  const userDoc = await adminDb.collection('users').doc(userId).get();
+  const userData = userDoc.data();
+  const isOwnerPro = hasActiveProAccess(userData);
 
   const uploadGuide = {
     ide: project.upload_guide?.ide || 'Arduino IDE 2.x',
@@ -212,12 +219,21 @@ export default async function SharePage({ params }: SharePageProps) {
           </Section>
 
           <Section title="Upload Guide" icon={<UploadCloud className="h-4 w-4" />}>
-            <div className="space-y-3 text-sm text-zinc-300">
-              <p><span className="font-bold text-teal-300">IDE:</span> {uploadGuide.ide}</p>
-              <p><span className="font-bold text-teal-300">Board package:</span> {uploadGuide.board_package}</p>
-              <p><span className="font-bold text-teal-300">Serial monitor:</span> {uploadGuide.serial_monitor}</p>
-              <ol className="list-decimal space-y-2 pl-5">{uploadGuide.steps.map((step, index) => <li key={`${step}-${index}`}>{step}</li>)}</ol>
-            </div>
+            {isOwnerPro ? (
+              <div className="space-y-3 text-sm text-zinc-300">
+                <p><span className="font-bold text-teal-300">IDE:</span> {uploadGuide.ide}</p>
+                <p><span className="font-bold text-teal-300">Board package:</span> {uploadGuide.board_package}</p>
+                <p><span className="font-bold text-teal-300">Serial monitor:</span> {uploadGuide.serial_monitor}</p>
+                <ol className="list-decimal space-y-2 pl-5">{uploadGuide.steps.map((step, index) => <li key={`${step}-${index}`}>{step}</li>)}</ol>
+              </div>
+            ) : (
+              <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                  <Lock className="h-4 w-4" /> Pro Feature
+                </div>
+                <p className="text-sm text-zinc-400">Board-specific upload guide is available for Pro users only.</p>
+              </div>
+            )}
           </Section>
 
           <Section title="Testing" icon={<FlaskConical className="h-4 w-4" />}>
@@ -227,19 +243,28 @@ export default async function SharePage({ params }: SharePageProps) {
           </Section>
 
           <Section title="Simulation" icon={<MonitorPlay className="h-4 w-4" />}>
-            <div className="grid grid-cols-1 gap-3 text-sm text-zinc-300 sm:grid-cols-2">
-              {[
-                ['Inputs', simulation.inputs],
-                ['Outputs', simulation.outputs],
-                ['States', simulation.states],
-                ['Expected', simulation.expected_behavior],
-              ].map(([label, items]) => (
-                <div key={label as string} className="rounded-md border border-zinc-800 bg-zinc-950 p-3">
-                  <p className="text-xs font-bold uppercase text-teal-300">{label as string}</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-4">{(items as string[]).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
+            {isOwnerPro ? (
+              <div className="grid grid-cols-1 gap-3 text-sm text-zinc-300 sm:grid-cols-2">
+                {[
+                  ['Inputs', simulation.inputs],
+                  ['Outputs', simulation.outputs],
+                  ['States', simulation.states],
+                  ['Expected', simulation.expected_behavior],
+                ].map(([label, items]) => (
+                  <div key={label as string} className="rounded-md border border-zinc-800 bg-zinc-950 p-3">
+                    <p className="text-xs font-bold uppercase text-teal-300">{label as string}</p>
+                    <ul className="mt-2 list-disc space-y-1 pl-4">{(items as string[]).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                  <Lock className="h-4 w-4" /> Pro Feature
                 </div>
-              ))}
-            </div>
+                <p className="text-sm text-zinc-400">Premium simulation lab is available for Pro users only.</p>
+              </div>
+            )}
           </Section>
 
           <Section title="Learning & Upgrades" icon={<Lightbulb className="h-4 w-4" />}>
@@ -250,12 +275,21 @@ export default async function SharePage({ params }: SharePageProps) {
           </Section>
 
           <Section title="Teacher Mode" icon={<GraduationCap className="h-4 w-4" />}>
-            <div className="space-y-4 text-sm text-zinc-300">
-              <p>{project.teacher_mode?.abstract || `This project explains the design and testing of ${project.project_title}.`}</p>
-              <p><span className="font-bold text-teal-300">Working principle:</span> {project.teacher_mode?.working_principle || 'The controller reads inputs, processes logic, and controls outputs.'}</p>
-              <p><span className="font-bold text-teal-300">Conclusion:</span> {project.teacher_mode?.conclusion || 'The build demonstrates robotics design, firmware, testing, and debugging.'}</p>
-              <ol className="list-decimal space-y-2 pl-5">{fallbackList(project.teacher_mode?.viva_questions, `What is the role of ${project.target_board}?`).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ol>
-            </div>
+            {isOwnerPro ? (
+              <div className="space-y-4 text-sm text-zinc-300">
+                <p>{project.teacher_mode?.abstract || `This project explains the design and testing of ${project.project_title}.`}</p>
+                <p><span className="font-bold text-teal-300">Working principle:</span> {project.teacher_mode?.working_principle || 'The controller reads inputs, processes logic, and controls outputs.'}</p>
+                <p><span className="font-bold text-teal-300">Conclusion:</span> {project.teacher_mode?.conclusion || 'The build demonstrates robotics design, firmware, testing, and debugging.'}</p>
+                <ol className="list-decimal space-y-2 pl-5">{fallbackList(project.teacher_mode?.viva_questions, `What is the role of ${project.target_board}?`).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ol>
+              </div>
+            ) : (
+              <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                  <Lock className="h-4 w-4" /> Pro Feature
+                </div>
+                <p className="text-sm text-zinc-400">Teacher report mode with viva questions and marking rubric is available for Pro users only.</p>
+              </div>
+            )}
           </Section>
 
           {project.warnings.length > 0 && (
@@ -268,28 +302,46 @@ export default async function SharePage({ params }: SharePageProps) {
           )}
 
           <Section title="Code Explanation" icon={<Code2 className="h-4 w-4" />}>
-            <div className="space-y-3">
-              {codeExplanations.map((item, index) => (
-                <div key={`${item.concept}-${index}`} className="rounded-md border border-zinc-800 bg-zinc-950 p-3">
-                  <p className="text-sm font-bold text-zinc-100">{item.concept}</p>
-                  <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-md bg-zinc-900 p-2 text-xs text-emerald-300 font-mono"><code>{item.code_reference}</code></pre>
-                  <p className="mt-2 text-sm text-zinc-400">{item.explanation}</p>
+            {isOwnerPro ? (
+              <div className="space-y-3">
+                {codeExplanations.map((item, index) => (
+                  <div key={`${item.concept}-${index}`} className="rounded-md border border-zinc-800 bg-zinc-950 p-3">
+                    <p className="text-sm font-bold text-zinc-100">{item.concept}</p>
+                    <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-md bg-zinc-900 p-2 text-xs text-emerald-300 font-mono"><code>{item.code_reference}</code></pre>
+                    <p className="mt-2 text-sm text-zinc-400">{item.explanation}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                  <Lock className="h-4 w-4" /> Pro Feature
                 </div>
-              ))}
-            </div>
+                <p className="text-sm text-zinc-400">Student-friendly code explanations are available for Pro users only.</p>
+              </div>
+            )}
           </Section>
 
           <Section title="Presentation Slides" icon={<Presentation className="h-4 w-4" />}>
-            <div className="space-y-3">
-              {presentationSlides.map((slide, index) => (
-                <div key={`${slide.title}-${index}`} className="rounded-md border border-zinc-800 bg-zinc-950 p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-teal-300">Slide {index + 1}</p>
-                  <h3 className="mt-1 text-lg font-black text-zinc-100">{slide.title}</h3>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-300">{slide.bullets.map((bullet, bulletIndex) => <li key={`${bullet}-${bulletIndex}`}>{bullet}</li>)}</ul>
-                  <p className="mt-2 text-xs text-zinc-500">{slide.speaker_notes}</p>
+            {isOwnerPro ? (
+              <div className="space-y-3">
+                {presentationSlides.map((slide, index) => (
+                  <div key={`${slide.title}-${index}`} className="rounded-md border border-zinc-800 bg-zinc-950 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-teal-300">Slide {index + 1}</p>
+                    <h3 className="mt-1 text-lg font-black text-zinc-100">{slide.title}</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-300">{slide.bullets.map((bullet, bulletIndex) => <li key={`${bullet}-${bulletIndex}`}>{bullet}</li>)}</ul>
+                    <p className="mt-2 text-xs text-zinc-500">{slide.speaker_notes}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                  <Lock className="h-4 w-4" /> Pro Feature
                 </div>
-              ))}
-            </div>
+                <p className="text-sm text-zinc-400">Presentation slides with speaker notes are available for Pro users only.</p>
+              </div>
+            )}
           </Section>
 
           <article className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-5 lg:col-span-2">

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { ensureProAccessSynced } from '@/lib/server/subscription';
+import { requireAuthUser } from '@/lib/server/auth';
 
 interface GenerateRequestBody {
   prompt?: string;
@@ -160,14 +161,21 @@ Rules:
 
 export async function POST(req: Request) {
   try {
+    // Security: Require authentication
+    const authUser = await requireAuthUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized. Please sign in." }, { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
     const { prompt, board, userId, isModification, sessionId, currentProject } = (await req.json()) as GenerateRequestBody;
 
     if (!prompt?.trim()) {
-      return NextResponse.json({ error: "No hardware prompt parameters submitted." }, { status: 400 });
+      return NextResponse.json({ error: "No hardware prompt parameters submitted." }, { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    if (!userId) {
-      return NextResponse.json({ error: "User ID is required." }, { status: 400 });
+    // Security: Ensure userId matches authenticated user
+    if (!userId || userId !== authUser.uid) {
+      return NextResponse.json({ error: "User ID mismatch or missing." }, { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     // -------------------------------------------------------------
@@ -202,7 +210,7 @@ export async function POST(req: Request) {
               error: 'MOD_LIMIT_REACHED',
               message: 'This project has reached the 10-modification limit on the Free plan. Subscribe to Pro for unlimited edits!',
             },
-            { status: 403 }
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
           );
         }
 
@@ -219,7 +227,7 @@ export async function POST(req: Request) {
               error: 'QUOTA_EXCEEDED',
               message: 'You have used all 5 of your free AI generations for this month. Subscribe to Pro for unlimited generations!',
             },
-            { status: 403 }
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
           );
         }
 
@@ -231,7 +239,7 @@ export async function POST(req: Request) {
               error: 'SAVED_PROJECT_LIMIT_REACHED',
               message: 'Free workspaces can save up to 10 projects. Subscribe to Pro for unlimited saved projects.',
             },
-            { status: 403 }
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
           );
         }
       }
@@ -247,7 +255,7 @@ export async function POST(req: Request) {
 
     if (keyPool.length === 0) {
       console.error("[API Failover System] Critical: No Gemini credentials found in .env.local");
-      return NextResponse.json({ error: "Backend environment key missing error." }, { status: 500 });
+      return NextResponse.json({ error: "Backend environment key missing error." }, { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     let lastError: string | null = null;
@@ -312,7 +320,7 @@ ${currentProject ? `Existing project JSON to preserve and modify when relevant: 
       console.error("[API Failover System] Critical: All keys in target array have been completely exhausted.");
       return NextResponse.json(
         { error: `API capacity limit reached. Underlying error: ${lastError}` },
-        { status: 429 }
+        { status: 429, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -346,7 +354,7 @@ ${currentProject ? `Existing project JSON to preserve and modify when relevant: 
     console.error("[API Route Root Exception]:", globalError);
     return NextResponse.json(
       { error: "Internal compilation failure parsing matrix structural mapping data.", message: getErrorMessage(globalError) }, 
-      { status: 500 }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
