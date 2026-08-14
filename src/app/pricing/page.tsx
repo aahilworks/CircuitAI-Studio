@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
 import AuthModal from '@/lib/components/AuthModal';
+import CountrySelector from '@/lib/components/CountrySelector';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
-import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
+import { ArrowRight, CheckCircle2, CreditCard, Crown, Globe, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
 
 const freeFeatures = [
   '5 AI projects per month',
@@ -34,6 +35,17 @@ const proFeatures = [
   'Student-friendly code explanations',
 ];
 
+const PRICING = {
+  IN: { monthly: 999, yearly: 6999, symbol: '₹' },
+  US: { monthly: 12, yearly: 99, symbol: '$' },
+  GB: { monthly: 10, yearly: 79, symbol: '£' },
+  EU: { monthly: 11, yearly: 89, symbol: '€' },
+  CA: { monthly: 16, yearly: 129, symbol: 'C$' },
+  AU: { monthly: 18, yearly: 149, symbol: 'A$' },
+  AE: { monthly: 45, yearly: 349, symbol: 'د.إ' },
+  SG: { monthly: 16, yearly: 129, symbol: 'S$' },
+};
+
 export default function PricingPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -42,6 +54,8 @@ export default function PricingPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+  const [userCountry, setUserCountry] = useState<{ code: string; name: string; currency: string; symbol: string }>({ code: 'IN', name: 'India', currency: 'INR', symbol: '₹' });
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -57,7 +71,19 @@ export default function PricingPage() {
       }
 
       unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-        setIsProUser(snapshot.exists() ? hasActiveProAccess(snapshot.data()) : false);
+        const userData = snapshot.data();
+        setIsProUser(snapshot.exists() ? hasActiveProAccess(userData) : false);
+        
+        // Load user's country preference
+        if (userData?.countryCode) {
+          const countryData = {
+            code: userData.countryCode,
+            name: userData.countryName || 'India',
+            currency: userData.currency || 'INR',
+            symbol: userData.currencySymbol || '₹',
+          };
+          setUserCountry(countryData);
+        }
       });
 
       void user.getIdToken().then((token) =>
@@ -73,6 +99,24 @@ export default function PricingPage() {
     };
   }, []);
 
+  const handleCountrySelect = async (country: { code: string; name: string; currency: string; symbol: string }) => {
+    setUserCountry(country);
+    
+    // Save country preference to Firebase if user is logged in
+    if (currentUser) {
+      try {
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          countryCode: country.code,
+          countryName: country.name,
+          currency: country.currency,
+          currencySymbol: country.symbol,
+        });
+      } catch (error) {
+        console.error('Failed to save country preference:', error);
+      }
+    }
+  };
+
   const initiateCheckout = async () => {
     if (!currentUser) {
       setIsAuthModalOpen(true);
@@ -84,6 +128,7 @@ export default function PricingPage() {
     await initiateProSubscription({
       currentUser,
       billingCycle,
+      country: userCountry,
       onSuccess: (message) => alert(message),
       onError: (message) => alert(message),
     });
@@ -137,6 +182,18 @@ export default function PricingPage() {
             Free is enough to try CircuitAI. Pro is a subscription that unlocks serious student workflows: unlimited builds, unlimited saved history, reports, and advanced wiring.
           </p>
           
+          {/* Country Selector */}
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsCountrySelectorOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-teal-300 hover:border-teal-700 transition text-xs font-bold"
+            >
+              <Globe className="h-4 w-4" />
+              {userCountry.name} ({userCountry.currency})
+            </button>
+          </div>
+          
           {/* Billing Cycle Toggle */}
           <div className="mt-8 flex items-center gap-3 sm:gap-4">
             <button
@@ -187,7 +244,7 @@ export default function PricingPage() {
                 <h2 className="text-xl font-black text-teal-100">CircuitAI Pro</h2>
                 <p className="mt-2 text-sm text-teal-100/70">For students who need reports, revisions, and serious project history.</p>
                 <p className="mt-6 text-3xl font-black text-zinc-50">
-                  {billingCycle === 'yearly' ? '₹6,999' : '₹999'}
+                  {userCountry.symbol}{billingCycle === 'yearly' ? PRICING[userCountry.code as keyof typeof PRICING]?.yearly || 99 : PRICING[userCountry.code as keyof typeof PRICING]?.monthly || 12}
                   <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                 </p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
@@ -239,6 +296,12 @@ export default function PricingPage() {
       </section>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} user={currentUser} />
+      <CountrySelector 
+        isOpen={isCountrySelectorOpen} 
+        onClose={() => setIsCountrySelectorOpen(false)} 
+        onCountrySelect={handleCountrySelect}
+        currentCountry={userCountry.code}
+      />
     </main>
   );
 }

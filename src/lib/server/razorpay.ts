@@ -54,6 +54,22 @@ export function getRazorpayYearlyPlanId(): string {
   return planId;
 }
 
+export function getRazorpayInternationalMonthlyPlanId(): string {
+  const planId = process.env.RAZORPAY_INTERNATIONAL_MONTHLY_PLAN_ID?.trim();
+  if (!planId) {
+    throw new Error('RAZORPAY_INTERNATIONAL_MONTHLY_PLAN_ID is not configured. Create an international monthly plan in Razorpay Dashboard.');
+  }
+  return planId;
+}
+
+export function getRazorpayInternationalYearlyPlanId(): string {
+  const planId = process.env.RAZORPAY_INTERNATIONAL_YEARLY_PLAN_ID?.trim();
+  if (!planId) {
+    throw new Error('RAZORPAY_INTERNATIONAL_YEARLY_PLAN_ID is not configured. Create an international yearly plan in Razorpay Dashboard.');
+  }
+  return planId;
+}
+
 export function getTrialDays(): number {
   const raw = process.env.RAZORPAY_TRIAL_DAYS;
   const parsed = raw ? Number(raw) : 2;
