@@ -23,6 +23,8 @@ export default function CollaborationPanel({
   currentUser,
   onClose,
 }: CollaborationPanelProps) {
+  console.log('[CollaborationPanel] Component rendered', { sessionId, userId, isPro, currentUser: !!currentUser });
+  
   const [users, setUsers] = useState<CollaborationUser[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -131,6 +133,7 @@ export default function CollaborationPanel({
   }
 
   if (!isActive) {
+    console.log('[CollaborationPanel] Rendering start button', { isJoining, sessionId, userId, isPro });
     return (
       <div className="bg-zinc-900/60 border border-zinc-800 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
@@ -144,7 +147,10 @@ export default function CollaborationPanel({
           )}
         </div>
         <button
-          onClick={joinSession}
+          onClick={() => {
+            console.log('[CollaborationPanel] Start button clicked');
+            joinSession();
+          }}
           disabled={isJoining}
           className="w-full h-9 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
         >
