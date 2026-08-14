@@ -35,17 +35,6 @@ const proFeatures = [
   'Student-friendly code explanations',
 ];
 
-const PRICING = {
-  IN: { monthly: 999, yearly: 6999, symbol: '₹' },
-  US: { monthly: 12, yearly: 99, symbol: '$' },
-  GB: { monthly: 10, yearly: 79, symbol: '£' },
-  EU: { monthly: 11, yearly: 89, symbol: '€' },
-  CA: { monthly: 16, yearly: 129, symbol: 'C$' },
-  AU: { monthly: 18, yearly: 149, symbol: 'A$' },
-  AE: { monthly: 45, yearly: 349, symbol: 'د.إ' },
-  SG: { monthly: 16, yearly: 129, symbol: 'S$' },
-};
-
 export default function PricingPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -244,12 +233,17 @@ export default function PricingPage() {
                 <h2 className="text-xl font-black text-teal-100">CircuitAI Pro</h2>
                 <p className="mt-2 text-sm text-teal-100/70">For students who need reports, revisions, and serious project history.</p>
                 <p className="mt-6 text-3xl font-black text-zinc-50">
-                  {userCountry.symbol}{billingCycle === 'yearly' ? PRICING[userCountry.code as keyof typeof PRICING]?.yearly || 99 : PRICING[userCountry.code as keyof typeof PRICING]?.monthly || 12}
+                  ₹{billingCycle === 'yearly' ? '6,999' : '999'}
                   <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                 </p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
                   2-day free trial, then billed {billingCycle === 'yearly' ? 'yearly for 1 year' : 'monthly for 12 months'}
                 </p>
+                {userCountry.code !== 'IN' && (
+                  <p className="mt-2 text-[10px] text-amber-400 bg-amber-950/30 border border-amber-800 px-2 py-1 rounded">
+                    International payments coming soon. Currently accepting India payments only.
+                  </p>
+                )}
               </div>
 
               <button type="button" onClick={initiateCheckout} disabled={isProcessingPayment || isProUser} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
