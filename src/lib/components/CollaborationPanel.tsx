@@ -36,8 +36,14 @@ export default function CollaborationPanel({
   const joinSession = useCallback(async () => {
     console.log('[CollaborationPanel] joinSession called', { sessionId, userId, isPro });
     
-    if (!sessionId || !userId || !isPro) {
-      console.error('[CollaborationPanel] Missing required data', { sessionId, userId, isPro });
+    if (!sessionId || !userId) {
+      console.error('[CollaborationPanel] Missing required data', { sessionId, userId });
+      return;
+    }
+    
+    // Only pro users can start new sessions
+    if (!isPro) {
+      console.warn('[CollaborationPanel] Free users cannot start new sessions');
       return;
     }
     
@@ -57,15 +63,40 @@ export default function CollaborationPanel({
     }
   }, [sessionId, userId, userData, isPro, manager]);
 
+  // Allow free users to join existing sessions (read-only)
+  const joinExistingSession = useCallback(async () => {
+    console.log('[CollaborationPanel] joinExistingSession called', { sessionId, userId, isPro });
+    
+    if (!sessionId || !userId) {
+      console.error('[CollaborationPanel] Missing required data', { sessionId, userId });
+      return;
+    }
+    
+    setIsJoining(true);
+    try {
+      console.log('[CollaborationPanel] Calling manager.joinSession for existing session...');
+      const success = await manager.joinSession(sessionId, userId, userData || {}, true); // Force isPro=true for joining
+      console.log('[CollaborationPanel] joinSession result:', success);
+      setIsActive(success);
+      if (!success) {
+        console.error('[CollaborationPanel] Failed to join session');
+      }
+    } catch (error) {
+      console.error('[CollaborationPanel] Error joining session:', error);
+    } finally {
+      setIsJoining(false);
+    }
+  }, [sessionId, userId, userData, manager]);
+
   const leaveSession = useCallback(async () => {
     await manager.leaveSession();
     setIsActive(false);
   }, [manager]);
 
   useEffect(() => {
-    if (!sessionId || !userId || !isPro) return;
+    if (!sessionId || !userId) return;
     
-    // Don't auto-join - let user manually start
+    // Allow both pro and free users to listen to session changes
     manager.onSessionChange(() => {
       const sessionUsers = manager.getSessionUsers();
       setUsers(sessionUsers);
@@ -79,7 +110,7 @@ export default function CollaborationPanel({
     return () => {
       manager.leaveSession();
     };
-  }, [sessionId, userId, userData, isPro, manager]);
+  }, [sessionId, userId, userData, manager]);
 
   const copyShareLink = () => {
     if (shareLink) {
@@ -96,7 +127,9 @@ export default function CollaborationPanel({
     return 'Inactive';
   };
 
-  if (!isPro) {
+  // Remove the pro-only gate - allow free users to see collaboration panel
+  // if they have a sessionId (e.g., from a shared link)
+  if (!isPro && !sessionId) {
     return (
       <div className="bg-zinc-900/60 border border-zinc-800 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
@@ -146,21 +179,43 @@ export default function CollaborationPanel({
             </button>
           )}
         </div>
-        <button
-          onClick={() => {
-            console.log('[CollaborationPanel] Start button clicked');
-            joinSession();
-          }}
-          disabled={isJoining}
-          className="w-full h-9 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
-        >
-          {isJoining ? (
-            <Clock className="h-4 w-4 animate-spin" />
-          ) : (
-            <Share2 className="h-4 w-4" />
-          )}
-          {isJoining ? 'Starting...' : 'Start Collaboration'}
-        </button>
+        
+        {isPro ? (
+          <button
+            onClick={() => {
+              console.log('[CollaborationPanel] Start button clicked (Pro)');
+              joinSession();
+            }}
+            disabled={isJoining}
+            className="w-full h-9 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+          >
+            {isJoining ? (
+              <Clock className="h-4 w-4 animate-spin" />
+            ) : (
+              <Share2 className="h-4 w-4" />
+            )}
+            {isJoining ? 'Starting...' : 'Start Collaboration'}
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <button
+              onClick={() => {
+                console.log('[CollaborationPanel] Join button clicked (Free)');
+                joinExistingSession();
+              }}
+              disabled={isJoining}
+              className="w-full h-9 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+            >
+              {isJoining ? (
+                <Clock className="h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="h-4 w-4" />
+              )}
+              {isJoining ? 'Joining...' : 'Join Session'}
+            </button>
+            <p className="text-[10px] text-zinc-500 text-center">Free users can join existing sessions</p>
+          </div>
+        )}
       </div>
     );
   }

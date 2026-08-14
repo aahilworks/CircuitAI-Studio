@@ -517,12 +517,24 @@ export default function Home() {
         setIsProUser(snapshot.exists() ? hasActiveProAccess(snapshot.data()) : false);
       });
 
-      void user.getIdToken().then((token) =>
-        fetch('/api/subscription-status', {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => undefined),
-      );
       void fetchSidebarHistory(user.uid);
+      
+      // Check for session parameter in URL for collaboration links
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionParam = urlParams.get('session');
+        if (sessionParam) {
+          console.log('[Workspace] Found session parameter in URL:', sessionParam);
+          setCurrentSessionId(sessionParam);
+          setShowCollaborationPanel(true);
+          // Try to load the session from history
+          const existingSession = historySessions.find(s => s.id === sessionParam);
+          if (existingSession) {
+            console.log('[Workspace] Loading existing session from history');
+            resumeSession(existingSession);
+          }
+        }
+      }
     });
 
     return () => {
