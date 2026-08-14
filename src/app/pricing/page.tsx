@@ -140,7 +140,7 @@ export default function PricingPage() {
             </button>
             {billingCycle === 'yearly' && (
               <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
-                Save 17%
+                Save 42%
               </span>
             )}
           </div>
@@ -169,7 +169,7 @@ export default function PricingPage() {
                 <h2 className="text-xl font-black text-teal-100">CircuitAI Pro</h2>
                 <p className="mt-2 text-sm text-teal-100/70">For students who need reports, revisions, and serious project history.</p>
                 <p className="mt-6 text-3xl font-black text-zinc-50">
-                  {billingCycle === 'yearly' ? '₹9,999' : '₹999'}
+                  {billingCycle === 'yearly' ? '₹6,999' : '₹999'}
                   <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                 </p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">

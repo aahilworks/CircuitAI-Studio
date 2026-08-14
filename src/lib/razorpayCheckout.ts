@@ -89,7 +89,7 @@ export async function initiateProSubscription({
 
     const isTestMode = razorpayKey.startsWith('rzp_test_');
     const isYearly = billingCycle === 'yearly';
-    const price = isYearly ? '₹9,999' : '₹999';
+    const price = isYearly ? '₹6,999' : '₹999';
     const period = isYearly ? 'year' : 'month';
 
     const razorpayInstance = new window.Razorpay({
