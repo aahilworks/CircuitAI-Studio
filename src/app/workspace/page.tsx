@@ -6,6 +6,7 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, getDocs, query, orderBy, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import AuthModal from '@/lib/components/AuthModal';
+import CollaborationPanel from '@/lib/components/CollaborationPanel';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import {
@@ -46,6 +47,7 @@ import {
   Sparkles,
   Store,
   UploadCloud,
+  Users,
   Wrench,
   X,
 } from 'lucide-react';
@@ -185,6 +187,7 @@ export default function Home() {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [presentationSlideIndex, setPresentationSlideIndex] = useState(0);
   const [isPresentationFullscreen, setIsPresentationFullscreen] = useState(false);
+  const [showCollaborationPanel, setShowCollaborationPanel] = useState(false);
 
   const resetWorkspace = useCallback(() => {
     setCurrentSessionId(null);
@@ -1070,6 +1073,30 @@ ${data.secondary_code}
               </button>
             ))}
           </div>
+
+          {isProUser && (
+            <div className="mt-4 pt-4 border-t border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setShowCollaborationPanel(!showCollaborationPanel)}
+                className="w-full h-9 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-xs flex items-center justify-center gap-2 text-zinc-400 hover:text-teal-300 transition"
+              >
+                <Users className="h-3.5 w-3.5" /> {showCollaborationPanel ? 'Hide' : 'Show'} Collaboration
+              </button>
+              
+              {showCollaborationPanel && (
+                <div className="mt-3">
+                  <CollaborationPanel
+                    sessionId={currentSessionId || undefined}
+                    userId={currentUser?.uid || undefined}
+                    userData={{ email: currentUser?.email || undefined, displayName: currentUser?.displayName || undefined }}
+                    isPro={isProUser}
+                    onClose={() => setShowCollaborationPanel(false)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.10),transparent_34rem)]">
