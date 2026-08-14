@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getRazorpayWebhookSecret } from '@/lib/server/razorpay';
+import { isActiveSubscriptionStatus } from '@/lib/proAccess';
 import {
   activateProSubscription,
   findUserIdBySubscriptionId,
@@ -96,6 +97,41 @@ export async function POST(request: Request) {
         });
         break;
 
+      case 'subscription.pending':
+        // Handle pending subscription (trial period or awaiting payment)
+        await activateProSubscription(userId, {
+          subscriptionId,
+          subscriptionStatus: subscription?.status || 'pending',
+          currentPeriodEnd,
+          lastPaymentId: paymentId,
+        });
+        break;
+
+      case 'subscription.paused':
+        // Handle paused subscription - revoke access temporarily
+        await revokeProSubscription(userId, {
+          subscriptionId,
+          subscriptionStatus: subscription?.status || 'paused',
+        });
+        break;
+
+      case 'subscription.updated':
+        // Handle subscription updates - check if status changed
+        if (subscription?.status && isActiveSubscriptionStatus(subscription.status)) {
+          await activateProSubscription(userId, {
+            subscriptionId,
+            subscriptionStatus: subscription.status,
+            currentPeriodEnd,
+            lastPaymentId: paymentId,
+          });
+        } else {
+          await revokeProSubscription(userId, {
+            subscriptionId,
+            subscriptionStatus: subscription?.status || 'updated',
+          });
+        }
+        break;
+
       case 'subscription.cancelled':
       case 'subscription.halted':
       case 'subscription.completed':
@@ -113,6 +149,7 @@ export async function POST(request: Request) {
         break;
 
       default:
+        console.log('[razorpay-webhook] Unhandled event:', event);
         break;
     }
 

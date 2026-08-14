@@ -1,10 +1,11 @@
-export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['authenticated', 'active', 'pending']);
+export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['authenticated', 'active', 'pending', 'trial']);
 
 export const ENDED_SUBSCRIPTION_STATUSES = new Set([
   'cancelled',
   'halted',
   'completed',
   'payment_failed',
+  'paused',
 ]);
 
 export interface ProAccessUserData {
