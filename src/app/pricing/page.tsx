@@ -40,6 +40,7 @@ export default function PricingPage() {
   const [isProUser, setIsProUser] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -81,6 +82,7 @@ export default function PricingPage() {
 
     await initiateProSubscription({
       currentUser,
+      billingCycle,
       onSuccess: (message) => alert(message),
       onError: (message) => alert(message),
     });
@@ -114,8 +116,34 @@ export default function PricingPage() {
           </div>
           <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Choose the workspace for your robotics projects.</h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-            Free is enough to try CircuitAI. Pro is a monthly subscription that unlocks serious student workflows: unlimited builds, unlimited saved history, reports, and advanced wiring.
+            Free is enough to try CircuitAI. Pro is a subscription that unlocks serious student workflows: unlimited builds, unlimited saved history, reports, and advanced wiring.
           </p>
+          
+          {/* Billing Cycle Toggle */}
+          <div className="mt-8 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('monthly')}
+              className={`text-sm font-bold transition ${billingCycle === 'monthly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Monthly
+            </button>
+            <div className="h-6 w-11 rounded-full bg-zinc-800 relative cursor-pointer" onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}>
+              <div className={`absolute top-1 h-4 w-4 rounded-full bg-teal-300 transition-all ${billingCycle === 'monthly' ? 'left-1' : 'left-6'}`} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setBillingCycle('yearly')}
+              className={`text-sm font-bold transition ${billingCycle === 'yearly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Yearly
+            </button>
+            {billingCycle === 'yearly' && (
+              <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
+                Save 17%
+              </span>
+            )}
+          </div>
         </div>
       </section>
 
@@ -140,8 +168,13 @@ export default function PricingPage() {
               <div>
                 <h2 className="text-xl font-black text-teal-100">CircuitAI Pro</h2>
                 <p className="mt-2 text-sm text-teal-100/70">For students who need reports, revisions, and serious project history.</p>
-                <p className="mt-6 text-3xl font-black text-zinc-50">₹999<span className="text-base font-bold text-teal-100/70">/month</span></p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">2-day free trial, then billed monthly for 12 months</p>
+                <p className="mt-6 text-3xl font-black text-zinc-50">
+                  {billingCycle === 'yearly' ? '₹9,999' : '₹999'}
+                  <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
+                </p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
+                  2-day free trial, then billed {billingCycle === 'yearly' ? 'yearly for 12 months' : 'monthly for 12 months'}
+                </p>
               </div>
 
               <button type="button" onClick={initiateCheckout} disabled={isProcessingPayment || isProUser} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">

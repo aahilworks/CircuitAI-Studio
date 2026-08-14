@@ -38,12 +38,14 @@ const loadRazorpayScript = (): Promise<boolean> =>
 
 interface InitiateProSubscriptionOptions {
   currentUser: User;
+  billingCycle?: 'monthly' | 'yearly';
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
 
 export async function initiateProSubscription({
   currentUser,
+  billingCycle = 'monthly',
   onSuccess,
   onError,
 }: InitiateProSubscriptionOptions): Promise<void> {
@@ -68,6 +70,7 @@ export async function initiateProSubscription({
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ billingCycle }),
     });
 
     const subscriptionData = await subscriptionRes.json();
@@ -85,14 +88,17 @@ export async function initiateProSubscription({
     }
 
     const isTestMode = razorpayKey.startsWith('rzp_test_');
+    const isYearly = billingCycle === 'yearly';
+    const price = isYearly ? '₹9,999' : '₹999';
+    const period = isYearly ? 'year' : 'month';
 
     const razorpayInstance = new window.Razorpay({
       key: razorpayKey,
       subscription_id: subscriptionData.subscription_id,
       name: 'CircuitAI',
       description: isTestMode
-        ? 'Pro Monthly (Test Mode) — 2-day trial, then ₹999/month'
-        : 'Pro Monthly Subscription — 2-day free trial, then ₹999/month',
+        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — 2-day trial, then ${price}/${period}`
+        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} Subscription — 2-day free trial, then ${price}/${period}`,
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,
