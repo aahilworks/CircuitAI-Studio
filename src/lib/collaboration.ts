@@ -1,7 +1,7 @@
 'use client';
 
-import { ref, onValue, onDisconnect, set, update, remove, get } from 'firebase/database';
-import { rtdb } from '@/lib/firebase';
+import { doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { hasActiveProAccess } from '@/lib/proAccess';
 
 export interface CollaborationUser {
@@ -36,11 +36,12 @@ function getUserColor(uid: string): string {
 export class CollaborationManager {
   private sessionId: string | null = null;
   private userId: string | null = null;
-  private userRef: any = null;
-  private sessionRef: any = null;
-  private usersRef: any = null;
+  private userDocRef: any = null;
+  private sessionDocRef: any = null;
+  private usersCollectionRef: any = null;
   private listeners: Array<() => void> = [];
   private currentUsers: CollaborationUser[] = [];
+  private unsubscribeUsers: (() => void) | null = null;
 
   constructor() {
     this.setupCleanup();
@@ -74,18 +75,18 @@ export class CollaborationManager {
     this.userId = userId;
 
     try {
-      const sessionRef = ref(rtdb, `collaboration/sessions/${sessionId}`);
-      this.sessionRef = sessionRef;
+      const sessionDocRef = doc(db, 'collaboration', 'sessions', sessionId);
+      this.sessionDocRef = sessionDocRef;
 
       const userColor = getUserColor(userId);
-      const userRef = ref(rtdb, `collaboration/sessions/${sessionId}/users/${userId}`);
-      this.userRef = userRef;
+      const userDocRef = doc(db, 'collaboration', 'sessions', sessionId, 'users', userId);
+      this.userDocRef = userDocRef;
 
       console.log('[Collaboration] Checking if session exists...');
-      const sessionSnapshot = await get(sessionRef);
+      const sessionSnapshot = await getDoc(sessionDocRef);
       if (!sessionSnapshot.exists()) {
         console.log('[Collaboration] Creating new session...');
-        await set(sessionRef, {
+        await setDoc(sessionDocRef, {
           ownerId: userId,
           isActive: true,
           createdAt: Date.now(),
@@ -95,7 +96,7 @@ export class CollaborationManager {
       }
 
       console.log('[Collaboration] Adding user to session...');
-      await set(userRef, {
+      await setDoc(userDocRef, {
         uid: userId,
         email: userData.email,
         displayName: userData.displayName,
@@ -103,19 +104,34 @@ export class CollaborationManager {
         lastActive: Date.now(),
       });
 
-      console.log('[Collaboration] Setting up disconnect handler...');
-      onDisconnect(userRef).remove();
-
       console.log('[Collaboration] Setting up user listener...');
-      const usersRef = ref(rtdb, `collaboration/sessions/${sessionId}/users`);
-      this.usersRef = usersRef;
+      // Listen to users subcollection
+      const usersCollectionRef = doc(db, 'collaboration', 'sessions', sessionId);
+      this.usersCollectionRef = usersCollectionRef;
       
-      onValue(usersRef, (snapshot) => {
-        const usersData = snapshot.val() || {};
-        this.currentUsers = Object.values(usersData) as CollaborationUser[];
-        console.log('[Collaboration] Users updated:', this.currentUsers.length);
-        this.notifyListeners();
-      });
+      this.unsubscribeUsers = onSnapshot(
+        doc(db, 'collaboration', 'sessions', sessionId),
+        async (snapshot) => {
+          try {
+            const sessionData = snapshot.data();
+            if (sessionData && sessionData.users) {
+              this.currentUsers = Object.values(sessionData.users) as CollaborationUser[];
+              console.log('[Collaboration] Users updated:', this.currentUsers.length);
+              this.notifyListeners();
+            } else {
+              // Try to get users from subcollection
+              const usersSnapshot = await getDoc(doc(db, 'collaboration', 'sessions', sessionId, 'users', userId));
+              if (usersSnapshot.exists()) {
+                this.currentUsers = [usersSnapshot.data() as CollaborationUser];
+                console.log('[Collaboration] Users updated (subcollection):', this.currentUsers.length);
+                this.notifyListeners();
+              }
+            }
+          } catch (error) {
+            console.error('[Collaboration] Error processing user update:', error);
+          }
+        }
+      );
 
       console.log('[Collaboration] Session joined successfully');
       return true;
@@ -127,10 +143,10 @@ export class CollaborationManager {
   }
 
   updateCursor(x: number, y: number) {
-    if (!this.userRef || !this.userId) return;
+    if (!this.userDocRef || !this.userId) return;
     
     try {
-      update(this.userRef, {
+      updateDoc(this.userDocRef, {
         cursor: { x, y },
         lastActive: Date.now(),
       });
@@ -141,8 +157,8 @@ export class CollaborationManager {
 
   async leaveSession() {
     try {
-      if (this.userRef) {
-        await remove(this.userRef);
+      if (this.userDocRef) {
+        await deleteDoc(this.userDocRef);
       }
     } catch (error) {
       console.error('[Collaboration] Error leaving session:', error);
@@ -163,18 +179,15 @@ export class CollaborationManager {
   }
 
   private cleanup() {
-    if (this.userRef) {
-      onDisconnect(this.userRef).cancel();
-    }
-    if (this.usersRef) {
-      // Remove the listener
-      onValue(this.usersRef, () => {});
+    if (this.unsubscribeUsers) {
+      this.unsubscribeUsers();
+      this.unsubscribeUsers = null;
     }
     this.sessionId = null;
     this.userId = null;
-    this.userRef = null;
-    this.sessionRef = null;
-    this.usersRef = null;
+    this.userDocRef = null;
+    this.sessionDocRef = null;
+    this.usersCollectionRef = null;
     this.currentUsers = [];
     this.listeners = [];
   }

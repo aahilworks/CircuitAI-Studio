@@ -1,7 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,6 +18,3 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Explicitly target the literal "default" instance string
 export const db = getFirestore(app, "(default)");
-
-// Firebase Realtime Database for real-time collaboration
-export const rtdb = getDatabase(app);
