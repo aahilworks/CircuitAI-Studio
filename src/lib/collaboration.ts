@@ -1,6 +1,6 @@
 'use client';
 
-import { doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { hasActiveProAccess } from '@/lib/proAccess';
 
@@ -106,25 +106,16 @@ export class CollaborationManager {
       });
 
       console.log('[Collaboration] Setting up user listener...');
-      // Listen to session document for user updates
+      // Listen to users subcollection to get all users in the session
+      const usersCollectionRef = collection(db, 'collaborationSessions', sessionId, 'users');
       this.unsubscribeUsers = onSnapshot(
-        sessionDocRef,
-        async (snapshot) => {
+        usersCollectionRef,
+        (snapshot) => {
           try {
-            const sessionData = snapshot.data();
-            if (sessionData && sessionData.users) {
-              this.currentUsers = Object.values(sessionData.users) as CollaborationUser[];
-              console.log('[Collaboration] Users updated:', this.currentUsers.length);
-              this.notifyListeners();
-            } else {
-              // Try to get users from subcollection
-              const usersSnapshot = await getDoc(userDocRef);
-              if (usersSnapshot.exists()) {
-                this.currentUsers = [usersSnapshot.data() as CollaborationUser];
-                console.log('[Collaboration] Users updated (subcollection):', this.currentUsers.length);
-                this.notifyListeners();
-              }
-            }
+            const usersData = snapshot.docs.map(doc => doc.data()) as CollaborationUser[];
+            this.currentUsers = usersData;
+            console.log('[Collaboration] Users updated:', this.currentUsers.length);
+            this.notifyListeners();
           } catch (error) {
             console.error('[Collaboration] Error processing user update:', error);
           }
