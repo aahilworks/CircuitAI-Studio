@@ -38,7 +38,9 @@ export class CollaborationManager {
   private userId: string | null = null;
   private userRef: any = null;
   private sessionRef: any = null;
+  private usersRef: any = null;
   private listeners: Array<() => void> = [];
+  private currentUsers: CollaborationUser[] = [];
 
   constructor() {
     this.setupCleanup();
@@ -71,60 +73,73 @@ export class CollaborationManager {
     const userRef = ref(rtdb, `collaboration/sessions/${sessionId}/users/${userId}`);
     this.userRef = userRef;
 
-    // Check if session exists and is active
-    const sessionSnapshot = await get(sessionRef);
-    if (!sessionSnapshot.exists()) {
-      // Create new session
-      await set(sessionRef, {
-        ownerId: userId,
-        isActive: true,
-        createdAt: Date.now(),
+    try {
+      // Check if session exists and is active
+      const sessionSnapshot = await get(sessionRef);
+      if (!sessionSnapshot.exists()) {
+        // Create new session
+        await set(sessionRef, {
+          ownerId: userId,
+          isActive: true,
+          createdAt: Date.now(),
+        });
+      }
+
+      // Add user to session
+      await set(userRef, {
+        uid: userId,
+        email: userData.email,
+        displayName: userData.displayName,
+        color: userColor,
+        lastActive: Date.now(),
       });
+
+      // Set up disconnect handler
+      onDisconnect(userRef).remove();
+
+      // Listen to session changes and populate users
+      const usersRef = ref(rtdb, `collaboration/sessions/${sessionId}/users`);
+      this.usersRef = usersRef;
+      
+      onValue(usersRef, (snapshot) => {
+        const usersData = snapshot.val() || {};
+        this.currentUsers = Object.values(usersData) as CollaborationUser[];
+        this.notifyListeners();
+      });
+
+      return true;
+    } catch (error) {
+      console.error('[Collaboration] Error joining session:', error);
+      return false;
     }
-
-    // Add user to session
-    await set(userRef, {
-      uid: userId,
-      email: userData.email,
-      displayName: userData.displayName,
-      color: userColor,
-      lastActive: Date.now(),
-    });
-
-    // Set up disconnect handler
-    onDisconnect(userRef).remove();
-
-    // Listen to session changes
-    const usersRef = ref(rtdb, `collaboration/sessions/${sessionId}/users`);
-    onValue(usersRef, (snapshot) => {
-      const users = snapshot.val() || {};
-      this.notifyListeners();
-    });
-
-    return true;
   }
 
   updateCursor(x: number, y: number) {
     if (!this.userRef || !this.userId) return;
     
-    update(this.userRef, {
-      cursor: { x, y },
-      lastActive: Date.now(),
-    });
+    try {
+      update(this.userRef, {
+        cursor: { x, y },
+        lastActive: Date.now(),
+      });
+    } catch (error) {
+      console.error('[Collaboration] Error updating cursor:', error);
+    }
   }
 
   async leaveSession() {
-    if (this.userRef) {
-      await remove(this.userRef);
+    try {
+      if (this.userRef) {
+        await remove(this.userRef);
+      }
+    } catch (error) {
+      console.error('[Collaboration] Error leaving session:', error);
     }
     this.cleanup();
   }
 
   getSessionUsers(): CollaborationUser[] {
-    if (!this.sessionId) return [];
-    
-    // This will be populated by the listener
-    return [];
+    return this.currentUsers;
   }
 
   onSessionChange(callback: () => void) {
@@ -139,10 +154,16 @@ export class CollaborationManager {
     if (this.userRef) {
       onDisconnect(this.userRef).cancel();
     }
+    if (this.usersRef) {
+      // Remove the listener
+      onValue(this.usersRef, () => {});
+    }
     this.sessionId = null;
     this.userId = null;
     this.userRef = null;
     this.sessionRef = null;
+    this.usersRef = null;
+    this.currentUsers = [];
     this.listeners = [];
   }
 
