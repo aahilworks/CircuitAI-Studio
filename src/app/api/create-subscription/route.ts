@@ -38,10 +38,11 @@ export async function POST(request: Request) {
 
     const planId = billingCycle === 'yearly' ? getRazorpayYearlyPlanId() : getRazorpayPlanId();
     const product = billingCycle === 'yearly' ? 'circuitai_pro_yearly' : 'circuitai_pro_monthly';
+    const totalCount = billingCycle === 'yearly' ? 1 : 12;
 
     const subscription = await razorpay.subscriptions.create({
       plan_id: planId,
-      total_count: 12,
+      total_count: totalCount,
       customer_notify: 1,
       ...(startAt ? { start_at: startAt } : {}),
       notes: {

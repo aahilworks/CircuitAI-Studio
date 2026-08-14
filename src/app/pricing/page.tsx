@@ -173,7 +173,7 @@ export default function PricingPage() {
                   <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                 </p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
-                  2-day free trial, then billed {billingCycle === 'yearly' ? 'yearly for 12 months' : 'monthly for 12 months'}
+                  2-day free trial, then billed {billingCycle === 'yearly' ? 'yearly for 1 year' : 'monthly for 12 months'}
                 </p>
               </div>
 
