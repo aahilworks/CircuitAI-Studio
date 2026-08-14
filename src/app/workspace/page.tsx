@@ -1094,6 +1094,7 @@ ${data.secondary_code}
                   userId={currentUser?.uid || undefined}
                   userData={{ email: currentUser?.email || undefined, displayName: currentUser?.displayName || undefined }}
                   isPro={isProUser}
+                  currentUser={currentUser}
                   onClose={() => setShowCollaborationPanel(false)}
                 />
               </div>
@@ -1563,34 +1564,35 @@ ${data.secondary_code}
                 )}
 
                 {activeTab === 'quiz' && (
-                  <div className="space-y-4">
-                    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                          <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><Award className="h-4 w-4" /> Trivia Quiz</h3>
-                          <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">10-question viva practice</h2>
-                          <p className="mt-2 text-sm text-zinc-400">Timed practice based on this project&apos;s board, parts, wiring, upload guide, safety, simulation, and teacher questions.</p>
+                  isProUser ? (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                          <div>
+                            <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><Award className="h-4 w-4" /> Trivia Quiz</h3>
+                            <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">10-question viva practice</h2>
+                            <p className="mt-2 text-sm text-zinc-400">Timed practice based on this project&apos;s board, parts, wiring, upload guide, safety, simulation, and teacher questions.</p>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
+                              <p className="text-zinc-500 font-bold uppercase">Time</p>
+                              <p className={`mt-1 text-lg font-black ${quizSecondsRemaining <= 60 ? 'text-red-300' : 'text-teal-300'}`}>{quizMinutes}:{quizSeconds}</p>
+                            </div>
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
+                              <p className="text-zinc-500 font-bold uppercase">Done</p>
+                              <p className="mt-1 text-lg font-black text-zinc-100">{Object.keys(quizAnswers).length}/10</p>
+                            </div>
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
+                              <p className="text-zinc-500 font-bold uppercase">Score</p>
+                              <p className="mt-1 text-lg font-black text-emerald-300">{quizSubmitted ? `${quizScore}/10` : '--'}</p>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                          <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
-                            <p className="text-zinc-500 font-bold uppercase">Time</p>
-                            <p className={`mt-1 text-lg font-black ${quizSecondsRemaining <= 60 ? 'text-red-300' : 'text-teal-300'}`}>{quizMinutes}:{quizSeconds}</p>
-                          </div>
-                          <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
-                            <p className="text-zinc-500 font-bold uppercase">Done</p>
-                            <p className="mt-1 text-lg font-black text-zinc-100">{Object.keys(quizAnswers).length}/10</p>
-                          </div>
-                          <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
-                            <p className="text-zinc-500 font-bold uppercase">Score</p>
-                            <p className="mt-1 text-lg font-black text-emerald-300">{quizSubmitted ? `${quizScore}/10` : '--'}</p>
-                          </div>
+                        <div className="mt-5 h-2 overflow-hidden rounded-full bg-zinc-950 border border-zinc-800">
+                          <div className="h-full bg-teal-500 transition-all" style={{ width: `${(Object.keys(quizAnswers).length / Math.max(quizQuestions.length, 1)) * 100}%` }} />
                         </div>
-                      </div>
-
-                      <div className="mt-5 h-2 overflow-hidden rounded-full bg-zinc-950 border border-zinc-800">
-                        <div className="h-full bg-teal-500 transition-all" style={{ width: `${(Object.keys(quizAnswers).length / Math.max(quizQuestions.length, 1)) * 100}%` }} />
-                      </div>
 
                       <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                         {!quizStarted ? (
@@ -1661,30 +1663,49 @@ ${data.secondary_code}
                       })}
                     </div>
                   </div>
+                  ) : (
+                    <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                        <Crown className="h-4 w-4" /> Pro Feature
+                      </div>
+                      <p className="text-sm text-zinc-400 mb-4">Timed viva practice quiz with scoring is available for Pro users only.</p>
+                      <button
+                        onClick={() => {
+                          if (currentUser) {
+                            initiateProSubscription({ currentUser });
+                          }
+                        }}
+                        className="h-9 px-4 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+                      >
+                        <Crown className="h-4 w-4" /> Upgrade to Pro
+                      </button>
+                    </div>
+                  )
                 )}
 
                 {activeTab === 'present' && (
-                  <div className="space-y-4">
-                    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><Presentation className="h-4 w-4" /> Presentation Mode</h3>
-                          <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">5-slide project presentation</h2>
-                          <p className="mt-2 text-sm text-zinc-400">Ready for class demos: aim, components, circuit/code, working/testing, and result/future scope.</p>
-                        </div>
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                          <button type="button" onClick={openPresentationFullscreen} className="h-9 px-3 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
-                            <Maximize2 className="h-3.5 w-3.5" /> Fullscreen
-                          </button>
-                          <button type="button" onClick={downloadPresentation} className="h-9 px-3 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
-                            <Download className="h-3.5 w-3.5" /> Slides HTML
-                          </button>
-                          <button type="button" onClick={copyShareLink} className="h-9 px-3 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 hover:text-teal-300 hover:border-teal-800 flex items-center justify-center gap-2 transition">
-                            <Share2 className="h-3.5 w-3.5" /> Share Link
-                          </button>
+                  isProUser ? (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><Presentation className="h-4 w-4" /> Presentation Mode</h3>
+                            <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">5-slide project presentation</h2>
+                            <p className="mt-2 text-sm text-zinc-400">Ready for class demos: aim, components, circuit/code, working/testing, and result/future scope.</p>
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <button type="button" onClick={openPresentationFullscreen} className="h-9 px-3 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+                              <Maximize2 className="h-3.5 w-3.5" /> Fullscreen
+                            </button>
+                            <button type="button" onClick={downloadPresentation} className="h-9 px-3 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+                              <Download className="h-3.5 w-3.5" /> Slides HTML
+                            </button>
+                            <button type="button" onClick={copyShareLink} className="h-9 px-3 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 hover:text-teal-300 hover:border-teal-800 flex items-center justify-center gap-2 transition">
+                              <Share2 className="h-3.5 w-3.5" /> Share Link
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
                     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[9rem_1fr]">
                       <div className="flex gap-2 overflow-x-auto xl:flex-col xl:overflow-x-visible">
@@ -1735,30 +1756,48 @@ ${data.secondary_code}
                       </div>
                     </div>
                   </div>
+                  ) : (
+                    <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                        <Crown className="h-4 w-4" /> Pro Feature
+                      </div>
+                      <p className="text-sm text-zinc-400 mb-4">Presentation slides with speaker notes are available for Pro users only.</p>
+                      <button
+                        onClick={() => {
+                          if (currentUser) {
+                            initiateProSubscription({ currentUser });
+                          }
+                        }}
+                        className="h-9 px-4 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+                      >
+                        <Crown className="h-4 w-4" /> Upgrade to Pro
+                      </button>
+                    </div>
+                  )
                 )}
 
                 {activeTab === 'report' && (
                   isProUser ? (
                     <div className="space-y-4">
-                    <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-lg">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        <div>
-                          <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><FileText className="h-4 w-4" /> Teacher Report Mode</h3>
-                          <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">{data.project_title}</h2>
-                          <p className="mt-2 text-sm text-zinc-400">A school-ready project report structure for submission, viva preparation, or documentation.</p>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <button type="button" onClick={printTeacherReport} className="h-9 px-3 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
-                            <Printer className="h-3.5 w-3.5" /> PDF / Print
-                          </button>
-                          <button type="button" onClick={downloadTeacherReport} className="h-9 px-3 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 hover:text-teal-300 hover:border-teal-800 flex items-center justify-center gap-2 transition">
-                            <Download className="h-3.5 w-3.5" /> HTML
-                          </button>
+                      <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-lg">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                          <div>
+                            <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><FileText className="h-4 w-4" /> Teacher Report Mode</h3>
+                            <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">{data.project_title}</h2>
+                            <p className="mt-2 text-sm text-zinc-400">A school-ready project report structure for submission, viva preparation, or documentation.</p>
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <button type="button" onClick={printTeacherReport} className="h-9 px-3 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+                              <Printer className="h-3.5 w-3.5" /> PDF / Print
+                            </button>
+                            <button type="button" onClick={downloadTeacherReport} className="h-9 px-3 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 hover:text-teal-300 hover:border-teal-800 flex items-center justify-center gap-2 transition">
+                              <Download className="h-3.5 w-3.5" /> HTML
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
                       {[
                         { title: 'Aim', body: `To design, assemble, test, and explain ${data.project_title} using ${data.target_board}.` },
                         { title: 'Abstract', body: data.teacher_mode?.abstract || `This report documents the design, construction, firmware, testing, and safety checks for ${data.project_title}.` },
@@ -1796,28 +1835,37 @@ ${data.secondary_code}
                         ]).map((rubric, idx) => <li key={`${rubric}-${idx}`} className="flex gap-2"><span className="text-violet-300">•</span>{rubric}</li>)}
                       </ul>
                     </div>
+
+                    <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-lg">
+                      <h3 className="text-teal-300 font-bold uppercase tracking-wider mb-3">Pro Benefits</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {['PDF / print reports', 'Viva questions', 'Clean teacher format', 'Unlimited saved reports'].map((benefit) => (
+                          <div key={benefit} className="rounded-md border border-zinc-800 bg-zinc-950/70 px-3 py-2 text-xs text-zinc-300">
+                            {benefit}
+                          </div>
+                        ))}
+                      </div>
+                      <button type="button" onClick={() => initiateCheckout()} disabled={isProcessingPayment} className="mt-5 h-10 px-4 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition disabled:opacity-50">
+                        {isProcessingPayment ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />} Start Pro Trial
+                      </button>
+                    </div>
                   </div>
                   ) : (
                     <div className="bg-teal-950/20 border border-teal-900/60 rounded-lg p-6">
-                      <div className="max-w-2xl">
-                        <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
-                          <Crown className="h-4 w-4 fill-teal-300" /> Pro Feature
-                        </div>
-                        <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">Unlock Teacher Report Mode.</h2>
-                        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                          Pro includes school-ready reports with aim, working principle, components, procedures, conclusion, viva questions, and PDF / print export.
-                        </p>
-                        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {['PDF / print reports', 'Viva questions', 'Clean teacher format', 'Unlimited saved reports'].map((benefit) => (
-                            <div key={benefit} className="rounded-md border border-zinc-800 bg-zinc-950/70 px-3 py-2 text-xs text-zinc-300">
-                              {benefit}
-                            </div>
-                          ))}
-                        </div>
-                        <button type="button" onClick={() => initiateCheckout()} disabled={isProcessingPayment} className="mt-5 h-10 px-4 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition disabled:opacity-50">
-                          {isProcessingPayment ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />} Start Pro Trial
-                        </button>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-teal-300 mb-2">
+                        <Crown className="h-4 w-4" /> Pro Feature
                       </div>
+                      <p className="text-sm text-zinc-400 mb-4">School-ready teacher reports with viva questions are available for Pro users only.</p>
+                      <button
+                        onClick={() => {
+                          if (currentUser) {
+                            initiateProSubscription({ currentUser });
+                          }
+                        }}
+                        className="h-9 px-4 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+                      >
+                        <Crown className="h-4 w-4" /> Upgrade to Pro
+                      </button>
                     </div>
                   )
                 )}

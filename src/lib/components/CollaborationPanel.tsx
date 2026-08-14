@@ -3,12 +3,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Users, X, Share2, UserPlus, Copy, CheckCircle2, Clock, Crown } from 'lucide-react';
 import { getCollaborationManager, type CollaborationUser } from '@/lib/collaboration';
+import { initiateProSubscription } from '@/lib/razorpayCheckout';
+import type { User } from 'firebase/auth';
 
 interface CollaborationPanelProps {
   sessionId: string | undefined;
   userId: string | undefined;
   userData?: { email?: string | undefined; displayName?: string | undefined };
   isPro: boolean;
+  currentUser?: User | null;
   onClose?: () => void;
 }
 
@@ -17,6 +20,7 @@ export default function CollaborationPanel({
   userId,
   userData,
   isPro,
+  currentUser,
   onClose,
 }: CollaborationPanelProps) {
   const [users, setUsers] = useState<CollaborationUser[]>([]);
@@ -31,9 +35,17 @@ export default function CollaborationPanel({
     if (!sessionId || !userId || !isPro) return;
     
     setIsJoining(true);
-    const success = await manager.joinSession(sessionId, userId, userData || {}, isPro);
-    setIsActive(success);
-    setIsJoining(false);
+    try {
+      const success = await manager.joinSession(sessionId, userId, userData || {}, isPro);
+      setIsActive(success);
+      if (!success) {
+        console.error('[Collaboration] Failed to join session');
+      }
+    } catch (error) {
+      console.error('[Collaboration] Error joining session:', error);
+    } finally {
+      setIsJoining(false);
+    }
   }, [sessionId, userId, userData, isPro, manager]);
 
   const leaveSession = useCallback(async () => {
@@ -44,9 +56,7 @@ export default function CollaborationPanel({
   useEffect(() => {
     if (!sessionId || !userId || !isPro) return;
     
-    // Auto-join if session exists
-    joinSession();
-
+    // Don't auto-join - let user manually start
     manager.onSessionChange(() => {
       const sessionUsers = manager.getSessionUsers();
       setUsers(sessionUsers);
@@ -60,7 +70,7 @@ export default function CollaborationPanel({
     return () => {
       manager.leaveSession();
     };
-  }, [sessionId, userId, userData, isPro, manager, joinSession]);
+  }, [sessionId, userId, userData, isPro, manager]);
 
   const copyShareLink = () => {
     if (shareLink) {
@@ -99,7 +109,11 @@ export default function CollaborationPanel({
             </div>
           </div>
           <button
-            onClick={() => alert('Real-time collaboration is a Pro feature. Subscribe to unlock it.')}
+            onClick={() => {
+              if (currentUser) {
+                initiateProSubscription({ currentUser });
+              }
+            }}
             className="w-full h-9 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
           >
             <Crown className="h-4 w-4" /> Upgrade to Pro
