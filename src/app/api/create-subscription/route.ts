@@ -23,6 +23,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const billingCycle = body.billingCycle || 'monthly';
 
+    if (billingCycle === 'yearly') {
+      return NextResponse.json({ error: 'Yearly payments use one-time payment. Please use the yearly option.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
     const userRef = adminDb.collection('users').doc(user.uid);
     const userDoc = await userRef.get();
     const userData = userDoc.data();
@@ -37,9 +41,9 @@ export async function POST(request: Request) {
     const startAt =
       trialDays > 0 ? Math.floor(Date.now() / 1000) + trialDays * 24 * 60 * 60 : undefined;
 
-    const planId = billingCycle === 'yearly' ? getRazorpayYearlyPlanId() : getRazorpayPlanId();
-    const product = billingCycle === 'yearly' ? 'circuitai_pro_yearly' : 'circuitai_pro_monthly';
-    const totalCount = 12; // Both monthly and yearly are recurring (12 cycles)
+    const planId = getRazorpayPlanId(); // Only monthly plan for subscriptions
+    const product = 'circuitai_pro_monthly';
+    const totalCount = 12; // Monthly subscription for 12 months
 
     const subscription = await razorpay.subscriptions.create({
       plan_id: planId,
