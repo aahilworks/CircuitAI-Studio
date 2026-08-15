@@ -511,7 +511,17 @@ export default function Home() {
 
       const userDocRef = doc(db, 'users', user.uid);
       unsubscribeUserDoc = onSnapshot(userDocRef, (snapshot) => {
-        setIsProUser(snapshot.exists() ? hasActiveProAccess(snapshot.data()) : false);
+        if (snapshot.exists()) {
+          setIsProUser(hasActiveProAccess(snapshot.data()));
+        } else {
+          // User document doesn't exist, create it
+          setDoc(userDocRef, {
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            isPro: false,
+          }, { merge: true });
+          setIsProUser(false);
+        }
       });
 
       void fetchSidebarHistory(user.uid);

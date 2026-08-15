@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
 import AuthModal from '@/lib/components/AuthModal';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, getDocs, orderBy, limit, setDoc } from 'firebase/firestore';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import { 
   ArrowRight, 
@@ -68,8 +68,17 @@ export default function DashboardPage() {
 
       // Load user data
       unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-        const data = snapshot.data() as UserData | undefined;
-        setUserData(data || null);
+        if (snapshot.exists()) {
+          setUserData(snapshot.data() as UserData);
+        } else {
+          // User document doesn't exist, create it
+          setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            isPro: false,
+          }, { merge: true });
+          setUserData(null);
+        }
       });
 
       // Load project count

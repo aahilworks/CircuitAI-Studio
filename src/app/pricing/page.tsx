@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
 import AuthModal from '@/lib/components/AuthModal';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
@@ -78,7 +78,17 @@ export default function PricingPage() {
       }
 
       unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-        setIsProUser(snapshot.exists() ? hasActiveProAccess(snapshot.data()) : false);
+        if (snapshot.exists()) {
+          setIsProUser(hasActiveProAccess(snapshot.data()));
+        } else {
+          // User document doesn't exist, create it
+          setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            isPro: false,
+          }, { merge: true });
+          setIsProUser(false);
+        }
       });
 
       void user.getIdToken().then((token) =>
