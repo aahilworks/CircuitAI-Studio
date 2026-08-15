@@ -123,8 +123,8 @@ export async function initiateProSubscription({
       ...(isYearly ? { order_id: subscriptionData.order_id } : { subscription_id: subscriptionData.subscription_id }),
       name: 'CircuitAI',
       description: isTestMode
-        ? `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — ${paymentType}, ${price}/${period}`
-        : `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} ${paymentType} — ${price}/${period}`,
+        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} - ${price}/${period}`
+        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} - ${price}/${period}`,
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,
