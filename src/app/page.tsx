@@ -131,6 +131,7 @@ export default function HomePage() {
         <div className="flex items-center gap-6">
           <Link href="/terms" className="hover:text-teal-300 transition">Terms</Link>
           <Link href="/privacy" className="hover:text-teal-300 transition">Privacy</Link>
+          <a href="mailto:techokids123@gmail.com" className="hover:text-teal-300 transition">Support</a>
         </div>
       </footer>
     </main>

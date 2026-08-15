@@ -285,6 +285,15 @@ export default function PricingPage() {
                 <Sparkles className="h-4 w-4" /> Sign In To Check Status
               </button>
             )}
+
+            <div className="mt-4 pt-4 border-t border-zinc-800">
+              <p className="text-xs text-zinc-500">
+                Need help with refunds or billing? Contact us at{' '}
+                <a href="mailto:techokids123@gmail.com" className="text-teal-400 hover:text-teal-300 underline">
+                  techokids123@gmail.com
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </section>
