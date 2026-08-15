@@ -50,7 +50,6 @@ export default function DashboardPage() {
   const [projectCount, setProjectCount] = useState(0);
   const [recentProjects, setRecentProjects] = useState<ProjectData[]>([]);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [isChangingPlan, setIsChangingPlan] = useState(false);
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -131,36 +130,6 @@ export default function DashboardPage() {
       alert('Failed to cancel subscription. Please try again.');
     } finally {
       setIsCancelling(false);
-    }
-  };
-
-  const handleChangePlan = async (newBillingCycle: 'monthly' | 'yearly') => {
-    if (!confirm(`Are you sure you want to change to ${newBillingCycle} billing? Your current subscription will be cancelled and a new one will be created.`)) {
-      return;
-    }
-
-    setIsChangingPlan(true);
-    try {
-      const token = await currentUser?.getIdToken();
-      const response = await fetch('/api/change-plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ billingCycle: newBillingCycle }),
-      });
-
-      if (response.ok) {
-        alert(`Successfully changed to ${newBillingCycle} billing.`);
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to change plan');
-      }
-    } catch (error) {
-      alert('Failed to change plan. Please try again.');
-    } finally {
-      setIsChangingPlan(false);
     }
   };
 
@@ -347,22 +316,14 @@ export default function DashboardPage() {
                     <span className="text-sm font-bold text-zinc-100">{formatDate(userData?.currentPeriodEnd || undefined)}</span>
                   </div>
                   
-                  <div className="pt-4 flex gap-3">
+                  <div className="pt-4">
                     <button
                       type="button"
                       onClick={handleCancelSubscription}
                       disabled={isCancelling}
-                      className="flex-1 h-10 px-4 rounded-lg border border-red-900/50 bg-red-950/30 hover:bg-red-950/50 text-red-300 text-xs font-bold uppercase transition disabled:opacity-50"
+                      className="w-full h-10 px-4 rounded-lg border border-red-900/50 bg-red-950/30 hover:bg-red-950/50 text-red-300 text-xs font-bold uppercase transition disabled:opacity-50"
                     >
                       {isCancelling ? <RefreshCw className="h-4 w-4 animate-spin mx-auto" /> : 'Cancel Subscription'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleChangePlan(userData?.subscriptionBillingCycle === 'yearly' ? 'monthly' : 'yearly')}
-                      disabled={isChangingPlan}
-                      className="flex-1 h-10 px-4 rounded-lg border border-teal-900/50 bg-teal-950/30 hover:bg-teal-950/50 text-teal-300 text-xs font-bold uppercase transition disabled:opacity-50"
-                    >
-                      {isChangingPlan ? <RefreshCw className="h-4 w-4 animate-spin mx-auto" /> : (userData?.subscriptionBillingCycle === 'yearly' ? 'Switch to Monthly' : 'Switch to Yearly')}
                     </button>
                   </div>
                 </div>

@@ -1,5 +1,22 @@
 import type { User } from 'firebase/auth';
 
+// Independence Day Offer: August 15, 2026 (80th Independence Day)
+// Offer valid for 5 days: August 15-19, 2026
+const INDEPENDENCE_DAY_START = new Date('2026-08-15T00:00:00.000Z');
+const INDEPENDENCE_DAY_END = new Date('2026-08-20T00:00:00.000Z');
+
+const isIndependenceDayOffer = () => {
+  const now = new Date();
+  return now >= INDEPENDENCE_DAY_START && now < INDEPENDENCE_DAY_END;
+};
+
+const getOfferPrice = (billingCycle: 'monthly' | 'yearly') => {
+  if (!isIndependenceDayOffer()) {
+    return billingCycle === 'yearly' ? '₹6,999' : '₹999';
+  }
+  return billingCycle === 'yearly' ? '₹5,999' : '₹699';
+};
+
 interface RazorpaySubscriptionResponse {
   razorpay_payment_id: string;
   razorpay_subscription_id: string;
@@ -90,17 +107,18 @@ export async function initiateProSubscription({
     const isTestMode = razorpayKey.startsWith('rzp_test_');
     const isYearly = billingCycle === 'yearly';
     
-    // Use India pricing
-    const price = isYearly ? '₹6,999' : '₹999';
+    // Use Independence Day offer pricing if active
+    const price = getOfferPrice(billingCycle);
     const period = isYearly ? 'year' : 'month';
+    const offerText = isIndependenceDayOffer() ? '🇮🇳 Independence Day Special - ' : '';
 
     const razorpayInstance = new window.Razorpay({
       key: razorpayKey,
       subscription_id: subscriptionData.subscription_id,
       name: 'CircuitAI',
       description: isTestMode
-        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — 2-day trial, then ${price}/${period}`
-        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} Subscription — 2-day free trial, then ${price}/${period}`,
+        ? `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — 2-day trial, then ${price}/${period}`
+        : `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} Subscription — 2-day free trial, then ${price}/${period}`,
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,

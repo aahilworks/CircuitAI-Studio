@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     const planId = billingCycle === 'yearly' ? getRazorpayYearlyPlanId() : getRazorpayPlanId();
     const product = billingCycle === 'yearly' ? 'circuitai_pro_yearly' : 'circuitai_pro_monthly';
-    const totalCount = billingCycle === 'yearly' ? 1 : 12;
+    const totalCount = 12; // Both monthly and yearly are recurring (12 cycles)
 
     const subscription = await razorpay.subscriptions.create({
       plan_id: planId,
