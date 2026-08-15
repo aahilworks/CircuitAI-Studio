@@ -32,14 +32,6 @@ interface RazorpaySubscriptionOptions {
   prefill: { email: string; name?: string };
   handler: (response: RazorpaySubscriptionResponse) => Promise<void>;
   theme: { color: string };
-  method?: {
-    upi: boolean;
-    card: boolean;
-    netbanking: boolean;
-    wallet: boolean;
-    emi: boolean;
-    paylater: boolean;
-  };
 }
 
 declare global {
@@ -136,14 +128,6 @@ export async function initiateProSubscription({
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,
-      },
-      method: {
-        upi: true,
-        card: true,
-        netbanking: true,
-        wallet: true,
-        emi: true,
-        paylater: true,
       },
       handler: async (response) => {
         try {
