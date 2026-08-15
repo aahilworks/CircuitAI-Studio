@@ -81,6 +81,13 @@ export async function POST(req: Request) {
         subscriptionStatus: 'authenticated',
         lastPaymentId: razorpay_payment_id,
       });
+      
+      // Also set billing cycle for monthly
+      const { adminDb } = await import('@/lib/firebaseAdmin');
+      const userRef = adminDb.collection('users').doc(user.uid);
+      await userRef.set({
+        subscriptionBillingCycle: 'monthly',
+      }, { merge: true });
     }
 
     return NextResponse.json({
