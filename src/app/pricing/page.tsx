@@ -231,14 +231,14 @@ export default function PricingPage() {
                     </p>
                   )}
                   <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
-                    2-day free trial, then billed {billingCycle === 'yearly' ? 'yearly for 12 months' : 'monthly for 12 months'}
+                    {billingCycle === 'yearly' ? 'One-time payment for 1 year access' : '2-day free trial, then billed monthly for 12 months'}
                   </p>
                 </div>
               </div>
 
               <button type="button" onClick={initiateCheckout} disabled={isProcessingPayment || isProUser} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
                 {isProcessingPayment ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                {isProUser ? 'Pro Active' : 'Start Pro Trial'}
+                {isProUser ? 'Pro Active' : (billingCycle === 'yearly' ? 'Buy Now' : 'Start Pro Trial')}
               </button>
             </div>
 

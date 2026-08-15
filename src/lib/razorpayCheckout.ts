@@ -25,7 +25,8 @@ interface RazorpaySubscriptionResponse {
 
 interface RazorpaySubscriptionOptions {
   key: string | undefined;
-  subscription_id: string;
+  subscription_id?: string;
+  order_id?: string;
   name: string;
   description: string;
   prefill: { email: string; name?: string };
@@ -81,7 +82,12 @@ export async function initiateProSubscription({
     }
 
     const idToken = await currentUser.getIdToken();
-    const subscriptionRes = await fetch('/api/create-subscription', {
+    
+    // For yearly, use one-time payment order; for monthly, use subscription
+    const isYearly = billingCycle === 'yearly';
+    const endpoint = isYearly ? '/api/create-order' : '/api/create-subscription';
+    
+    const subscriptionRes = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${idToken}`,
@@ -92,7 +98,7 @@ export async function initiateProSubscription({
 
     const subscriptionData = await subscriptionRes.json();
     if (!subscriptionRes.ok) {
-      throw new Error(subscriptionData.error || 'Failed to start subscription checkout.');
+      throw new Error(subscriptionData.error || 'Failed to start payment checkout.');
     }
 
     if (!window.Razorpay) {
@@ -101,24 +107,24 @@ export async function initiateProSubscription({
 
     const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     if (!razorpayKey) {
-      throw new Error('Subscription configuration is missing on this deployment.');
+      throw new Error('Payment configuration is missing on this deployment.');
     }
 
     const isTestMode = razorpayKey.startsWith('rzp_test_');
-    const isYearly = billingCycle === 'yearly';
     
     // Use Independence Day offer pricing if active
     const price = getOfferPrice(billingCycle);
     const period = isYearly ? 'year' : 'month';
     const offerText = isIndependenceDayOffer() ? '🇮🇳 Independence Day Special - ' : '';
+    const paymentType = isYearly ? 'One-time Payment' : 'Subscription';
 
     const razorpayInstance = new window.Razorpay({
       key: razorpayKey,
-      subscription_id: subscriptionData.subscription_id,
+      ...(isYearly ? { order_id: subscriptionData.order_id } : { subscription_id: subscriptionData.subscription_id }),
       name: 'CircuitAI',
       description: isTestMode
-        ? `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — 2-day trial, then ${price}/${period}`
-        : `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} Subscription — 2-day free trial, then ${price}/${period}`,
+        ? `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} (Test Mode) — ${paymentType}, ${price}/${period}`
+        : `${offerText}Pro ${isYearly ? 'Yearly' : 'Monthly'} ${paymentType} — ${price}/${period}`,
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,
@@ -132,16 +138,16 @@ export async function initiateProSubscription({
               Authorization: `Bearer ${verifyToken}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(response),
+            body: JSON.stringify({ ...response, billingCycle }),
           });
 
           const verifyData = await verifyRes.json();
           if (verifyRes.ok && verifyData.success) {
-            notifySuccess('Subscription started. Your CircuitAI Pro trial is active.');
+            notifySuccess(isYearly ? 'Payment successful. Your CircuitAI Pro is now active for 1 year!' : 'Subscription started. Your CircuitAI Pro trial is active.');
             return;
           }
 
-          notifyError(verifyData.error || 'Subscription verification failed.');
+          notifyError(verifyData.error || 'Payment verification failed.');
         } catch {
           notifyError('Verification request failed. Contact support if you were charged.');
         }
@@ -151,6 +157,6 @@ export async function initiateProSubscription({
 
     razorpayInstance.open();
   } catch (error) {
-    notifyError(error instanceof Error ? error.message : 'Subscription setup failed.');
+    notifyError(error instanceof Error ? error.message : 'Payment setup failed.');
   }
 }

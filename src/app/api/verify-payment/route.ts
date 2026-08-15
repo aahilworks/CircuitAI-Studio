@@ -6,8 +6,10 @@ import { activateProSubscription } from '@/lib/server/subscription';
 
 interface VerifySubscriptionBody {
   razorpay_subscription_id?: string;
+  razorpay_order_id?: string;
   razorpay_payment_id?: string;
   razorpay_signature?: string;
+  billingCycle?: 'monthly' | 'yearly';
 }
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -19,12 +21,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature } =
+    const { razorpay_subscription_id, razorpay_order_id, razorpay_payment_id, razorpay_signature, billingCycle } =
       (await req.json()) as VerifySubscriptionBody;
 
-    if (!razorpay_subscription_id || !razorpay_payment_id || !razorpay_signature) {
+    const isYearly = billingCycle === 'yearly';
+
+    if (!razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json(
-        { success: false, error: 'Missing subscription verification details.' },
+        { success: false, error: 'Missing payment verification details.' },
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (isYearly && !razorpay_order_id) {
+      return NextResponse.json(
+        { success: false, error: 'Missing order ID for yearly payment.' },
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!isYearly && !razorpay_subscription_id) {
+      return NextResponse.json(
+        { success: false, error: 'Missing subscription ID for monthly payment.' },
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -32,18 +50,38 @@ export async function POST(req: Request) {
     const secret = getRazorpayKeySecret();
     const expectedSignature = crypto
       .createHmac('sha256', secret)
-      .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
+      .update(`${razorpay_payment_id}|${isYearly ? razorpay_order_id : razorpay_subscription_id}`)
       .digest('hex');
 
     if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json({ success: false, error: 'Invalid subscription signature.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return NextResponse.json({ success: false, error: 'Invalid payment signature.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    await activateProSubscription(user.uid, {
-      subscriptionId: razorpay_subscription_id,
-      subscriptionStatus: 'authenticated',
-      lastPaymentId: razorpay_payment_id,
-    });
+    if (isYearly) {
+      // For one-time yearly payment, activate Pro for 1 year
+      const currentPeriodEnd = new Date();
+      currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
+      
+      const { adminDb } = await import('@/lib/firebaseAdmin');
+      const userRef = adminDb.collection('users').doc(user.uid);
+      
+      await userRef.set({
+        isPro: true,
+        subscriptionStatus: 'active',
+        currentPeriodEnd: currentPeriodEnd.toISOString(),
+        proActivatedAt: new Date().toISOString(),
+        subscriptionBillingCycle: 'yearly',
+        lastPaymentId: razorpay_payment_id,
+        pendingOrderId: null, // Clear pending order
+      }, { merge: true });
+    } else {
+      // For monthly subscription
+      await activateProSubscription(user.uid, {
+        subscriptionId: razorpay_subscription_id!,
+        subscriptionStatus: 'authenticated',
+        lastPaymentId: razorpay_payment_id,
+      });
+    }
 
     return NextResponse.json({
       success: true,

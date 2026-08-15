@@ -14,24 +14,34 @@ export async function POST(request: Request) {
     const userDoc = await userRef.get();
     const userData = userDoc.data();
 
-    if (!userData?.subscriptionId) {
-      return NextResponse.json({ error: 'No active subscription found.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
+    if (!userData?.isPro) {
+      return NextResponse.json({ error: 'No active Pro subscription found.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Cancel subscription in Razorpay
-    const razorpay = getRazorpayClient();
-    await razorpay.subscriptions.cancel(userData.subscriptionId);
+    // Check if user has a Razorpay subscription (monthly) or one-time payment (yearly)
+    if (userData?.subscriptionId) {
+      // Cancel Razorpay subscription for monthly users
+      try {
+        const razorpay = getRazorpayClient();
+        await razorpay.subscriptions.cancel(userData.subscriptionId);
+      } catch (error) {
+        console.error('Failed to cancel Razorpay subscription:', error);
+        // Continue with Firebase update even if Razorpay cancellation fails
+      }
+    }
 
-    // Update user document
+    // Update user document to remove Pro access
     await userRef.set(
       {
+        isPro: false,
         subscriptionStatus: 'cancelled',
         subscriptionCancelledAt: new Date().toISOString(),
+        currentPeriodEnd: new Date().toISOString(), // End access immediately
       },
       { merge: true }
     );
 
-    return NextResponse.json({ success: true, message: 'Subscription cancelled successfully.' }, { headers: { 'Content-Type': 'application/json' } });
+    return NextResponse.json({ success: true, message: 'Pro access cancelled successfully.' }, { headers: { 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     console.error('[cancel-subscription] failed:', error instanceof Error ? error.message : String(error));
 

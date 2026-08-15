@@ -317,14 +317,20 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="pt-4">
-                    <button
-                      type="button"
-                      onClick={handleCancelSubscription}
-                      disabled={isCancelling}
-                      className="w-full h-10 px-4 rounded-lg border border-red-900/50 bg-red-950/30 hover:bg-red-950/50 text-red-300 text-xs font-bold uppercase transition disabled:opacity-50"
-                    >
-                      {isCancelling ? <RefreshCw className="h-4 w-4 animate-spin mx-auto" /> : 'Cancel Subscription'}
-                    </button>
+                    {userData?.subscriptionBillingCycle === 'yearly' ? (
+                      <div className="text-xs text-zinc-500 text-center">
+                        One-time payment - no cancellation needed
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleCancelSubscription}
+                        disabled={isCancelling}
+                        className="w-full h-10 px-4 rounded-lg border border-red-900/50 bg-red-950/30 hover:bg-red-950/50 text-red-300 text-xs font-bold uppercase transition disabled:opacity-50"
+                      >
+                        {isCancelling ? <RefreshCw className="h-4 w-4 animate-spin mx-auto" /> : 'Cancel Subscription'}
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
