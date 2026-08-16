@@ -1,23 +1,43 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Database, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Database, LockKeyhole, ShieldCheck, User, CreditCard, Server, Eye } from 'lucide-react';
 
 const sections = [
   {
-    title: 'Project Prompts',
-    body: 'CircuitAI processes the project descriptions, board choices, and component details you enter so it can generate robotics project packs. These prompts are sent to the AI generation provider only for producing the requested output.',
-    Icon: ShieldCheck,
+    title: 'Personal Data We Collect',
+    body: 'We collect your email address, display name (optional), and unique user identifier (UID) when you create an account. This data is used for authentication, account management, and to provide personalized service. Your email is used for account verification, subscription notifications, and support communications.',
+    Icon: User,
   },
   {
-    title: 'Saved Builds',
-    body: 'When you sign in, generated projects are saved to your Firebase workspace so you can revisit code, wiring, assembly steps, tests, and troubleshooting notes later.',
+    title: 'Financial Data We Collect',
+    body: 'Payment processing is handled by Razorpay. We collect subscription plan type (monthly/yearly), billing cycle, payment status, and transaction IDs. We do NOT store your credit card numbers, bank details, or complete payment information. Razorpay securely processes payments and only shares transaction confirmation with us.',
+    Icon: CreditCard,
+  },
+  {
+    title: 'Purpose of Data Collection',
+    body: 'Personal data enables account authentication, subscription management, and service delivery. Financial data enables billing processing, subscription activation, and refund handling. Project data (prompts, generated content) is stored to provide saved workspace functionality and improve service quality.',
     Icon: Database,
   },
   {
-    title: 'External Services',
-    body: 'CircuitAI can link to tutorial searches, component searches, Firebase authentication, Gemini generation, and Razorpay subscription billing. Those providers handle their own service logs and policies.',
+    title: 'Data Security Measures',
+    body: 'All data is encrypted in transit using HTTPS/TLS. Firebase provides encryption at rest for database storage. Payment data is processed through Razorpay\'s PCI-DSS compliant infrastructure. We implement access controls, regular security audits, and follow industry best practices to protect your information.',
     Icon: LockKeyhole,
+  },
+  {
+    title: 'Data Sharing Practices',
+    body: 'We share data only with necessary service providers: Firebase (authentication & database), Razorpay (payment processing), and AI generation providers (for project generation). We do NOT sell your data to third parties. We do NOT share data for advertising purposes. Service providers have strict data protection obligations.',
+    Icon: ShieldCheck,
+  },
+  {
+    title: 'External Services',
+    body: 'CircuitAI integrates with Firebase (authentication & database), Razorpay (payment processing), and AI generation providers (for project creation). Each provider has independent privacy policies. We only share the minimum data required for these services to function.',
+    Icon: Server,
+  },
+  {
+    title: 'Your Data Rights',
+    body: 'You have the right to access, correct, or delete your personal data. You can export your project data from the dashboard. Account deletion removes your personal data from our systems. Financial records are retained for legal compliance but payment details are not stored.',
+    Icon: Eye,
   },
 ];
 
@@ -35,9 +55,9 @@ export default function PrivacyPage() {
           </div>
           <h1 className="mt-4 text-3xl md:text-5xl font-black tracking-tight text-zinc-50">Privacy Policy</h1>
           <p className="mt-3 text-sm md:text-base text-zinc-400 max-w-2xl leading-relaxed">
-            How CircuitAI handles prompts, saved robotics builds, account data, and third-party services.
+            Comprehensive information about personal and financial data collection, purpose, security, and sharing practices.
           </p>
-          <p className="mt-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Last updated: July 2026</p>
+          <p className="mt-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Last updated: August 16, 2026</p>
         </header>
 
         <div className="grid grid-cols-1 gap-4">
@@ -62,6 +82,12 @@ export default function PrivacyPage() {
             Founder & Developer:{' '}
             <a href="https://aahilworks.github.io" target="_blank" rel="noopener noreferrer" className="text-teal-300 hover:text-teal-200 transition">
               AahilWorks
+            </a>
+          </p>
+          <p className="mt-4">
+            Questions about privacy? Contact us at{' '}
+            <a href="mailto:techokids123@gmail.com" className="text-teal-300 hover:text-teal-200 underline">
+              techokids123@gmail.com
             </a>
           </p>
         </footer>
