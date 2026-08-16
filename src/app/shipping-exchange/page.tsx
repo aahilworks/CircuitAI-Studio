@@ -91,8 +91,8 @@ export default function ShippingExchangePage() {
             <h2 className="text-lg font-black text-zinc-100 mb-4">Questions?</h2>
             <p className="text-sm text-zinc-300">
               If you have any questions about service delivery or need special accommodations, please contact us at{' '}
-              <a href="mailto:techokids123@gmail.com" className="text-teal-400 hover:text-teal-300 underline">
-                techokids123@gmail.com
+              <a href="mailto:support@circuitai.in" className="text-teal-400 hover:text-teal-300 underline">
+                support@circuitai.in
               </a>
             </p>
           </div>

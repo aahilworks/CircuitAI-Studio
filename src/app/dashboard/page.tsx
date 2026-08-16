@@ -425,8 +425,8 @@ export default function DashboardPage() {
             <div className="mt-4 pt-4 border-t border-zinc-800">
               <p className="text-xs text-zinc-500">
                 Need help with refunds or billing? Contact us at{' '}
-                <a href="mailto:techokids123@gmail.com" className="text-teal-400 hover:text-teal-300 underline">
-                  techokids123@gmail.com
+                <a href="mailto:support@circuitai.in" className="text-teal-400 hover:text-teal-300 underline">
+                  support@circuitai.in
                 </a>
               </p>
             </div>

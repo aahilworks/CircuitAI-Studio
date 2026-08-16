@@ -241,7 +241,7 @@ export function generateSubscriptionConfirmationEmail(
           <a href="https://www.circuitai.in/dashboard" class="cta-button">Go to Dashboard</a>
 
           <p style="font-size: 14px; color: #a1a1aa;">
-            Need help? Contact us at <a href="mailto:techokids123@gmail.com" style="color: #14b8a6;">techokids123@gmail.com</a>
+            Need help? Contact us at <a href="mailto:support@circuitai.in" style="color: #14b8a6;">support@circuitai.in</a>
           </p>
         </div>
         <div class="footer">

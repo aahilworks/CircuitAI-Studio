@@ -86,8 +86,8 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-4">
             Questions about privacy? Contact us at{' '}
-            <a href="mailto:techokids123@gmail.com" className="text-teal-300 hover:text-teal-200 underline">
-              techokids123@gmail.com
+            <a href="mailto:support@circuitai.in" className="text-teal-300 hover:text-teal-200 underline">
+              support@circuitai.in
             </a>
           </p>
         </footer>

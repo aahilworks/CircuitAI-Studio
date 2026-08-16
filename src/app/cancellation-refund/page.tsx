@@ -52,7 +52,7 @@ export default function CancellationRefundPage() {
             <div className="space-y-3 text-sm text-zinc-300">
               <p>To request a cancellation or refund, contact our support team:</p>
               <ul className="list-disc list-inside space-y-2 ml-2">
-                <li>Email: <a href="mailto:techokids123@gmail.com" className="text-teal-400 hover:text-teal-300 underline">techokids123@gmail.com</a></li>
+                <li>Email: <a href="mailto:support@circuitai.in" className="text-teal-400 hover:text-teal-300 underline">support@circuitai.in</a></li>
                 <li>Include your account email and subscription details</li>
                 <li>State the reason for your refund request</li>
                 <li>Refunds are processed within 5-7 business days</li>
@@ -77,8 +77,8 @@ export default function CancellationRefundPage() {
             <h2 className="text-lg font-black text-zinc-100 mb-4">Questions?</h2>
             <p className="text-sm text-zinc-300">
               If you have any questions about our cancellation or refund policy, please contact us at{' '}
-              <a href="mailto:techokids123@gmail.com" className="text-teal-400 hover:text-teal-300 underline">
-                techokids123@gmail.com
+              <a href="mailto:support@circuitai.in" className="text-teal-400 hover:text-teal-300 underline">
+                support@circuitai.in
               </a>
             </p>
           </div>

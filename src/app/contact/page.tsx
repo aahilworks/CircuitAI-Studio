@@ -24,8 +24,8 @@ export default function ContactPage() {
             <div className="space-y-3 text-sm text-zinc-300">
               <p>For all inquiries, refunds, billing issues, or technical support:</p>
               <div className="bg-zinc-950 rounded-lg p-4 border border-zinc-800">
-                <a href="mailto:techokids123@gmail.com" className="text-teal-400 hover:text-teal-300 underline text-lg font-bold">
-                  techokids123@gmail.com
+                <a href="mailto:support@circuitai.in" className="text-teal-400 hover:text-teal-300 underline text-lg font-bold">
+                  support@circuitai.in
                 </a>
               </div>
               <p className="text-xs text-zinc-500">We typically respond within 24-48 hours on business days.</p>
