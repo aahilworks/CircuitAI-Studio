@@ -5,38 +5,38 @@ import { ArrowLeft, Database, LockKeyhole, ShieldCheck, User, CreditCard, Server
 
 const sections = [
   {
-    title: 'Personal Data We Collect',
-    body: 'We collect your email address, display name (optional), and unique user identifier (UID) when you create an account. This data is used for authentication, account management, and to provide personalized service. Your email is used for account verification, subscription notifications, and support communications.',
+    title: 'Data Collection Disclosure',
+    body: 'We collect the following types of data: Personal Information (name, email address, phone number if provided), Account Information (unique user identifier UID, display name), Financial Information (subscription plan type, billing cycle, payment status, transaction IDs), and Project Data (prompts, generated robotics projects). Financial data is collected securely during checkout through our payment gateway.',
     Icon: User,
   },
   {
-    title: 'Financial Data We Collect',
-    body: 'Payment processing is handled by Razorpay. We collect subscription plan type (monthly/yearly), billing cycle, payment status, and transaction IDs. We do NOT store your credit card numbers, bank details, or complete payment information. Razorpay securely processes payments and only shares transaction confirmation with us.',
-    Icon: CreditCard,
-  },
-  {
-    title: 'Purpose of Data Collection',
-    body: 'Personal data enables account authentication, subscription management, and service delivery. Financial data enables billing processing, subscription activation, and refund handling. Project data (prompts, generated content) is stored to provide saved workspace functionality and improve service quality.',
-    Icon: Database,
-  },
-  {
-    title: 'Data Security Measures',
-    body: 'All data is encrypted in transit using HTTPS/TLS. Firebase provides encryption at rest for database storage. Payment data is processed through Razorpay\'s PCI-DSS compliant infrastructure. We implement access controls, regular security audits, and follow industry best practices to protect your information.',
-    Icon: LockKeyhole,
-  },
-  {
-    title: 'Data Sharing Practices',
-    body: 'We share data only with necessary service providers: Firebase (authentication & database), Razorpay (payment processing), and AI generation providers (for project generation). We do NOT sell your data to third parties. We do NOT share data for advertising purposes. Service providers have strict data protection obligations.',
+    title: 'Third-Party Sharing',
+    body: 'Payment data is shared with partner banks (e.g., Axis Bank) and payment gateways (e.g., Razorpay) strictly to process transactions. We share data only with necessary service providers: Firebase (authentication & database), Razorpay (payment processing), Axis Bank (transaction processing), and AI generation providers (for project generation). We do NOT sell your data to third parties or share data for advertising purposes.',
     Icon: ShieldCheck,
   },
   {
-    title: 'External Services',
-    body: 'CircuitAI integrates with Firebase (authentication & database), Razorpay (payment processing), and AI generation providers (for project creation). Each provider has independent privacy policies. We only share the minimum data required for these services to function.',
+    title: 'Security Measures',
+    body: 'All transactions are encrypted and secured using industry standards. Payment processing is PCI-DSS compliant via Razorpay payment gateway. We do NOT store sensitive card data (CVV, full card numbers) locally - it is handled securely by the payment gateway. All data is encrypted in transit using HTTPS/TLS. Firebase provides encryption at rest for database storage. We implement access controls and regular security audits.',
+    Icon: LockKeyhole,
+  },
+  {
+    title: 'Information We Collect',
+    body: 'Financial data is collected securely during checkout. We collect subscription plan type (monthly/yearly), billing cycle, payment status, and transaction IDs. We do NOT collect or store credit card numbers, CVV codes, or complete banking information. Razorpay securely processes payments and only shares transaction confirmation with us.',
+    Icon: CreditCard,
+  },
+  {
+    title: 'How We Use Information',
+    body: 'Data is used exclusively to fulfill orders, process payments through Axis Bank / Razorpay, and meet legal obligations. Personal data enables account authentication, subscription management, and service delivery. Financial data enables billing processing, subscription activation, and refund handling. Project data is stored to provide saved workspace functionality.',
+    Icon: Database,
+  },
+  {
+    title: 'Data Security',
+    body: 'Our site does not store sensitive card data (CVV, full card numbers) locally. All sensitive payment information is handled securely by the payment gateway (Razorpay) in compliance with PCI-DSS standards. Only transaction confirmation data is stored in our systems for subscription management and legal compliance.',
     Icon: Server,
   },
   {
-    title: 'Your Data Rights',
-    body: 'You have the right to access, correct, or delete your personal data. You can export your project data from the dashboard. Account deletion removes your personal data from our systems. Financial records are retained for legal compliance but payment details are not stored.',
+    title: 'User Consent & Rights',
+    body: 'You can opt-out of data collection by deleting your account. You have the right to request data deletion by contacting us at techokids123@gmail.com. You can access, correct, or export your personal data from your dashboard. For questions about your financial data or to exercise your rights, contact our support team. Account deletion removes your personal data from our systems.',
     Icon: Eye,
   },
 ];
