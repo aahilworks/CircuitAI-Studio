@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { requireAuthUser } from '@/lib/server/auth';
 import { getRazorpayKeySecret } from '@/lib/server/razorpay';
 import { activateProSubscription } from '@/lib/server/subscription';
-import { sendEmail, generateSubscriptionConfirmationEmail } from '@/lib/email';
 
 interface VerifySubscriptionBody {
   razorpay_subscription_id?: string;
@@ -75,11 +74,6 @@ export async function POST(req: Request) {
         lastPaymentId: razorpay_payment_id,
         pendingOrderId: null, // Clear pending order
       }, { merge: true });
-
-      // Send confirmation email
-      const price = billingCycle === 'yearly' ? '5,999' : '699';
-      const { subject, html } = generateSubscriptionConfirmationEmail(user.email || '', 'yearly', price);
-      await sendEmail({ to: user.email || '', subject, html });
     } else {
       // For monthly subscription
       await activateProSubscription(user.uid, {
@@ -94,11 +88,6 @@ export async function POST(req: Request) {
       await userRef.set({
         subscriptionBillingCycle: 'monthly',
       }, { merge: true });
-
-      // Send confirmation email
-      const price = billingCycle === 'monthly' ? '699' : '999';
-      const { subject, html } = generateSubscriptionConfirmationEmail(user.email || '', 'monthly', price);
-      await sendEmail({ to: user.email || '', subject, html });
     }
 
     return NextResponse.json({
