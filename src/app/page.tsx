@@ -128,10 +128,12 @@ export default function HomePage() {
           &copy; 2026 <span className="text-zinc-300 font-bold">CircuitAI</span>. Founder & Developer:{' '}
           <a href="https://aahilworks.github.io" target="_blank" rel="noopener noreferrer" className="text-teal-300 hover:text-teal-200 transition">AahilWorks</a>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 flex-wrap justify-center">
           <Link href="/terms" className="hover:text-teal-300 transition">Terms</Link>
           <Link href="/privacy" className="hover:text-teal-300 transition">Privacy</Link>
-          <a href="mailto:techokids123@gmail.com" className="hover:text-teal-300 transition">Support</a>
+          <Link href="/cancellation-refund" className="hover:text-teal-300 transition">Cancellation & Refund</Link>
+          <Link href="/shipping-exchange" className="hover:text-teal-300 transition">Shipping & Exchange</Link>
+          <Link href="/contact" className="hover:text-teal-300 transition">Contact</Link>
         </div>
       </footer>
     </main>
