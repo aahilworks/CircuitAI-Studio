@@ -5,16 +5,68 @@ interface EmailOptions {
   text?: string;
 }
 
+let accessToken: string | null = null;
+let tokenExpiry: number | null = null;
+
+async function getAccessToken(): Promise<string | null> {
+  const clientId = process.env.ZOHO_CLIENT_ID;
+  const clientSecret = process.env.ZOHO_CLIENT_SECRET;
+  const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.error('Zoho OAuth credentials not configured');
+    return null;
+  }
+
+  // Check if token is still valid (with 5 minute buffer)
+  if (accessToken && tokenExpiry && Date.now() < tokenExpiry - 300000) {
+    return accessToken;
+  }
+
+  try {
+    const response = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        refresh_token: refreshToken,
+        client_id: clientId,
+        client_secret: clientSecret,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Failed to refresh Zoho access token:', error);
+      return null;
+    }
+
+    const data = await response.json();
+    accessToken = data.access_token;
+    tokenExpiry = Date.now() + (data.expires_in * 1000);
+    
+    return accessToken;
+  } catch (error) {
+    console.error('Error getting Zoho access token:', error);
+    return null;
+  }
+}
+
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
     const { to, subject, html, text } = options;
 
-    // Using Zoho Mail API
-    const zohoAccountId = process.env.ZOHO_ACCOUNT_ID;
-    const zohoAuthToken = process.env.ZOHO_AUTH_TOKEN;
+    const token = await getAccessToken();
+    if (!token) {
+      console.error('Failed to get Zoho access token');
+      return false;
+    }
 
-    if (!zohoAccountId || !zohoAuthToken) {
-      console.error('Zoho Mail credentials not configured');
+    const zohoAccountId = process.env.ZOHO_ACCOUNT_ID;
+    if (!zohoAccountId) {
+      console.error('Zoho Account ID not configured');
       return false;
     }
 
@@ -23,7 +75,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Zoho-oauthtoken ${zohoAuthToken}`,
+          'Authorization': `Zoho-oauthtoken ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
