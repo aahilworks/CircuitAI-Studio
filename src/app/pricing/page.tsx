@@ -30,7 +30,7 @@ const proFeatures = [
   'Teacher report mode for STEM education',
   'PDF export for Arduino project submissions',
   'Presentation slides for robotics projects',
-  'Viva practice quiz for Indian students',
+  'Viva practice quiz for students',
   'Board conversion workflows for Arduino',
   'Student-friendly Arduino code explanations',
 ];
@@ -172,9 +172,9 @@ export default function PricingPage() {
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
             <Crown className="h-4 w-4 fill-teal-300" /> Premium
           </div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Best Arduino project maker pricing for Indian students. STEM education subscription.</h1>
+          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Best Arduino project maker pricing for students. STEM education subscription.</h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-            Free tier to try CircuitAI's AI-powered Arduino project generator. Pro subscription unlocks unlimited robotics projects, circuit diagrams, Arduino code, and advanced features for STEM education. Best pricing for Indian students.
+            Free tier to try CircuitAI's AI-powered Arduino project generator. Pro subscription unlocks unlimited robotics projects, circuit diagrams, Arduino code, and advanced features for STEM education. Best pricing for students worldwide.
           </p>
           
           {/* Billing Cycle Toggle */}

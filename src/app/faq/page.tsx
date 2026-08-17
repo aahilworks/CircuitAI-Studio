@@ -7,11 +7,11 @@ import { useState } from 'react';
 const faqs = [
   {
     question: "What is CircuitAI - AI-Powered Arduino Project Generator?",
-    answer: "CircuitAI is the best Arduino project maker online for Indian students. It's an AI-powered robotics project generator that creates complete Arduino projects including circuit diagrams, Arduino code, wiring guides, bill of materials, and documentation. Perfect for STEM education, robotics for beginners, and electronics projects."
+    answer: "CircuitAI is the best Arduino project maker online for students. It's an AI-powered robotics project generator that creates complete Arduino projects including circuit diagrams, Arduino code, wiring guides, bill of materials, and documentation. Perfect for STEM education, robotics for beginners, and electronics projects."
   },
   {
-    question: "How does CircuitAI help Indian students with Arduino projects?",
-    answer: "CircuitAI helps Indian students by generating complete robotics projects with AI-powered circuit diagrams, Arduino code, and wiring guides. It's designed specifically for STEM education in India, providing school-ready documentation, teacher reports, and viva practice quizzes. Best for Arduino projects India and robotics education India."
+    question: "How does CircuitAI help students with Arduino projects?",
+    answer: "CircuitAI helps students by generating complete robotics projects with AI-powered circuit diagrams, Arduino code, and wiring guides. It's designed specifically for STEM education, providing school-ready documentation, teacher reports, and viva practice quizzes. Best for Arduino projects and robotics education."
   },
   {
     question: "What Arduino boards does CircuitAI support?",
@@ -23,22 +23,22 @@ const faqs = [
   },
   {
     question: "Is CircuitAI suitable for STEM education in schools?",
-    answer: "Absolutely! CircuitAI is designed as a STEM education tool for Indian schools. It provides teacher reports, marking rubrics, learning goals, and presentation slides. Perfect for STEM curriculum, robotics for schools, and maker education in India."
+    answer: "Absolutely! CircuitAI is designed as a STEM education tool for schools. It provides teacher reports, marking rubrics, learning goals, and presentation slides. Perfect for STEM curriculum, robotics for schools, and maker education."
   },
   {
     question: "What features does CircuitAI Pro offer for robotics learning?",
     answer: "CircuitAI Pro offers unlimited AI Arduino generations, unlimited robotics project modifications, advanced visual circuit diagrams, premium simulation lab, teacher report mode, PDF export, presentation slides, and viva practice quiz. Best for robotics learning platform and Arduino project help."
   },
   {
-    question: "How much does CircuitAI cost for Indian students?",
-    answer: "CircuitAI offers a free tier with 5 AI Arduino projects per month. Pro subscription starts at ₹699/month for unlimited robotics projects. Best Arduino project maker pricing for Indian students with affordable STEM education solutions."
+    question: "How much does CircuitAI cost for students?",
+    answer: "CircuitAI offers a free tier with 5 AI Arduino projects per month. Pro subscription starts at ₹699/month for unlimited robotics projects. Best Arduino project maker pricing for students with affordable STEM education solutions."
   },
   {
     question: "Can CircuitAI help with Arduino programming and code?",
     answer: "Yes, CircuitAI generates Arduino code with student-friendly explanations. It provides board-specific Arduino code upload guides, common upload errors and fixes, and Arduino IDE setup instructions. Perfect for Arduino programming, Arduino tutorial, and robotics for beginners."
   },
   {
-    question: "Does CircuitAI provide Arduino project ideas for engineering students?",
+    question: "Can CircuitAI provide Arduino project ideas for engineering students?",
     answer: "Yes, CircuitAI provides Arduino project ideas for engineering students including Arduino car project, Arduino robot arm, Arduino home automation, Arduino weather station, Arduino LED projects, Arduino motor control, Arduino sensor projects, Arduino IoT projects, Arduino Bluetooth projects, and Arduino WiFi projects."
   },
   {
@@ -54,8 +54,8 @@ const faqs = [
     answer: "Yes, CircuitAI supports Arduino IoT projects, Arduino WiFi projects, Arduino Bluetooth projects, and smart projects. Generate complete IoT project documentation with circuit diagrams, Arduino code, and wiring guides. Best for AI projects, automation projects, and EdTech solutions."
   },
   {
-    question: "How can Indian schools use CircuitAI for STEM education?",
-    answer: "Indian schools can use CircuitAI for STEM education by providing students with AI-powered Arduino project generation, teacher reports, marking rubrics, and presentation slides. Perfect for STEM education tools India, STEM curriculum, and robotics training."
+    question: "How can schools use CircuitAI for STEM education?",
+    answer: "Schools can use CircuitAI for STEM education by providing students with AI-powered Arduino project generation, teacher reports, marking rubrics, and presentation slides. Perfect for STEM education tools, STEM curriculum, and robotics training."
   },
   {
     question: "What makes CircuitAI the best robotics learning platform?",

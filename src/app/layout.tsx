@@ -14,23 +14,23 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CircuitAI - AI-Powered Robotics Project Generator for Students | Arduino Projects India",
-  description: "Generate complete Arduino robotics projects in minutes with AI. Includes circuit diagrams, code, wiring guides, and documentation. Perfect for STEM education, Indian students, and robotics for beginners. Best Arduino project maker online.",
-  keywords: "CircuitAI, AI robotics project generator, Arduino project maker, STEM education tools, robotics for students, Arduino code generator, circuit diagram generator, electronics projects, maker education, robotics learning platform, Arduino projects India, robotics education India, Arduino, robotics projects, STEM education, Arduino projects, circuit diagram, electronics projects, Arduino code, robotics for beginners, Arduino tutorial, STEM activities, Arduino project ideas, robotics kit, Arduino sensors, Arduino programming, circuit design, electronics for beginners, robotics competition, STEM curriculum, Arduino UNO projects, robotics engineering, Arduino car project, Arduino robot arm, Arduino home automation, Arduino weather station, Arduino LED projects, Arduino motor control, Arduino sensor projects, Arduino IoT projects, Arduino Bluetooth projects, Arduino WiFi projects, Arduino for students, robotics for schools, STEM education tools India, Arduino learning, robotics education, electronics education, maker education, project-based learning, hands-on learning, engineering projects, AI projects, machine learning projects, AI education, technology in education, EdTech tools, digital learning, AI for students, robotics AI, smart projects, automation projects, Arduino project help, robotics project services, STEM education solutions, Arduino consulting, robotics training, electronics design services, project assistance, Arduino development, robotics development, educational technology, AI-powered education, smart classroom, robotics in education, digital STEM, AI learning tools, virtual robotics, online Arduino, remote learning robotics, EdTech solutions, future of education",
+  title: "CircuitAI - AI-Powered Robotics Project Generator for Students | Arduino Projects",
+  description: "Generate complete Arduino robotics projects in minutes with AI. Includes circuit diagrams, code, wiring guides, and documentation. Perfect for STEM education, students worldwide, and robotics for beginners. Best Arduino project maker online.",
+  keywords: "CircuitAI, AI robotics project generator, Arduino project maker, STEM education tools, robotics for students, Arduino code generator, circuit diagram generator, electronics projects, maker education, robotics learning platform, Arduino projects, robotics projects, STEM education, Arduino projects, circuit diagram, electronics projects, Arduino code, robotics for beginners, Arduino tutorial, STEM activities, Arduino project ideas, robotics kit, Arduino sensors, Arduino programming, circuit design, electronics for beginners, robotics competition, STEM curriculum, Arduino UNO projects, robotics engineering, Arduino car project, Arduino robot arm, Arduino home automation, Arduino weather station, Arduino LED projects, Arduino motor control, Arduino sensor projects, Arduino IoT projects, Arduino Bluetooth projects, Arduino WiFi projects, Arduino for students, robotics for schools, STEM education tools, Arduino learning, robotics education, electronics education, maker education, project-based learning, hands-on learning, engineering projects, AI projects, machine learning projects, AI education, technology in education, EdTech tools, digital learning, AI for students, robotics AI, smart projects, automation projects, Arduino project help, robotics project services, STEM education solutions, Arduino consulting, robotics training, electronics design services, project assistance, Arduino development, robotics development, educational technology, AI-powered education, smart classroom, robotics in education, digital STEM, AI learning tools, virtual robotics, online Arduino, remote learning robotics, EdTech solutions, future of education",
   authors: [{ name: "AahilWorks", url: "https://aahilworks.github.io" }],
   creator: "AahilWorks",
   openGraph: {
-    title: "CircuitAI - AI-Powered Robotics Project Generator for Indian Students",
-    description: "Generate complete Arduino robotics projects in minutes with AI. Best STEM education tool for Indian students, robotics for beginners, and Arduino project maker online.",
+    title: "CircuitAI - AI-Powered Robotics Project Generator for Students",
+    description: "Generate complete Arduino robotics projects in minutes with AI. Best STEM education tool for students worldwide, robotics for beginners, and Arduino project maker online.",
     url: "https://www.circuitai.in",
     siteName: "CircuitAI",
-    locale: "en_IN",
+    locale: "en",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CircuitAI - AI-Powered Robotics Project Generator for Indian Students",
-    description: "Generate complete Arduino robotics projects in minutes with AI. Best STEM education tool for Indian students.",
+    title: "CircuitAI - AI-Powered Robotics Project Generator for Students",
+    description: "Generate complete Arduino robotics projects in minutes with AI. Best STEM education tool for students worldwide.",
   },
   robots: {
     index: true,
@@ -69,7 +69,6 @@ export default function RootLayout({
       '@type': 'ContactPoint',
       email: 'support@circuitai.in',
       contactType: 'customer service',
-      areaServed: 'IN',
       availableLanguage: 'English',
     },
     sameAs: [

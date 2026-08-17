@@ -11,7 +11,7 @@ const featureGroups = [
       'Student-friendly robotics project packs with AI',
       'Arduino, ESP32, Pico, NodeMCU, and custom board prompts',
       'Arduino firmware, wiring diagrams, BOM, tools, and safety notes',
-      'Smart parts list with price ranges and alternatives for Indian students',
+      'Smart parts list with price ranges and alternatives',
       'Modify existing Arduino projects without starting again',
     ],
     Icon: Bot,
@@ -41,7 +41,7 @@ const featureGroups = [
     title: 'Parts Shopping Guide',
     features: [
       'Quantity-based bill of materials for Arduino projects',
-      'Estimated student-market price ranges in India',
+      'Estimated student-market price ranges',
       'Buying tips for each electronics component',
       'Alternative compatible components for Arduino',
     ],
@@ -61,7 +61,7 @@ const featureGroups = [
   {
     title: 'Pro Features for Students',
     features: [
-      'Timed viva practice quiz with scoring for Indian students',
+      'Timed viva practice quiz with scoring',
       'Presentation slides with speaker notes',
       'School-ready teacher reports for STEM education',
       'Unlimited AI generations and modifications for Arduino projects',
@@ -75,7 +75,7 @@ const featureGroups = [
       'Firebase sign-in required for saved Arduino projects',
       'Saved robotics project history with search and board filters',
       'Free and Pro usage limits for STEM education',
-      'Pro monthly subscription via Razorpay for Indian students',
+      'Pro monthly subscription via Razorpay',
       'Pro status synced live from Firebase',
     ],
     Icon: Wrench,
@@ -128,9 +128,9 @@ export default function FeaturesPage() {
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
             <Code2 className="h-4 w-4" /> Features
           </div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Complete Arduino robotics project features for Indian students. Best STEM education tool.</h1>
+          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Complete Arduino robotics project features for students. Best STEM education tool.</h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-            CircuitAI is the best Arduino project maker online with AI-powered features for Indian students. Generate Arduino code, circuit diagrams, wiring guides, and complete robotics projects. Perfect for STEM education, robotics for beginners, and electronics projects.
+            CircuitAI is the best Arduino project maker online with AI-powered features for students. Generate Arduino code, circuit diagrams, wiring guides, and complete robotics projects. Perfect for STEM education, robotics for beginners, and electronics projects.
           </p>
         </div>
       </section>
