@@ -9,6 +9,9 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
+import { useCurrency } from '@/lib/hooks/useCurrency';
+import { convertPrice, formatPrice } from '@/lib/currency';
+import CurrencySelector from '@/lib/components/CurrencySelector';
 
 const freeFeatures = [
   '5 AI projects per month',
@@ -44,18 +47,19 @@ const isIndependenceDayOffer = () => {
   return now >= INDEPENDENCE_DAY_START && now < INDEPENDENCE_DAY_END;
 };
 
-const getOfferPrice = (billingCycle: 'monthly' | 'yearly') => {
+const getOfferPriceInINR = (billingCycle: 'monthly' | 'yearly') => {
   if (!isIndependenceDayOffer()) {
-    return billingCycle === 'yearly' ? '6,999' : '999';
+    return billingCycle === 'yearly' ? 6999 : 999;
   }
-  return billingCycle === 'yearly' ? '5,999' : '699';
+  return billingCycle === 'yearly' ? 5999 : 699;
 };
 
-const getOriginalPrice = (billingCycle: 'monthly' | 'yearly') => {
-  return billingCycle === 'yearly' ? '6,999' : '999';
+const getOriginalPriceInINR = (billingCycle: 'monthly' | 'yearly') => {
+  return billingCycle === 'yearly' ? 6999 : 999;
 };
 
 export default function PricingPage() {
+  const { currency, setCurrency } = useCurrency();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isProUser, setIsProUser] = useState(false);
@@ -200,6 +204,7 @@ export default function PricingPage() {
                 {isIndependenceDayOffer() ? 'Save 14%' : 'Save 42%'}
               </span>
             )}
+            <CurrencySelector selectedCurrency={currency} onCurrencyChange={setCurrency} />
           </div>
         </div>
       </section>
@@ -209,7 +214,7 @@ export default function PricingPage() {
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/90 p-5">
             <h2 className="text-xl font-black text-zinc-100">Free</h2>
             <p className="mt-2 text-sm text-zinc-500">For trying project generation.</p>
-            <p className="mt-6 text-3xl font-black text-zinc-50">₹0</p>
+            <p className="mt-6 text-3xl font-black text-zinc-50">{formatPrice(0, currency)}</p>
             <div className="mt-6 space-y-2">
               {freeFeatures.map((feature) => (
                 <div key={feature} className="flex items-start gap-2 text-sm text-zinc-400">
@@ -228,11 +233,11 @@ export default function PricingPage() {
                 <div className="mt-4">
                   {isIndependenceDayOffer() && (
                     <p className="text-sm font-semibold text-zinc-500 line-through">
-                      ₹{getOriginalPrice(billingCycle)}/{billingCycle === 'yearly' ? 'year' : 'month'}
+                      {formatPrice(convertPrice(getOriginalPriceInINR(billingCycle), currency), currency)}/{billingCycle === 'yearly' ? 'year' : 'month'}
                     </p>
                   )}
                   <p className="text-3xl font-black text-zinc-50">
-                    ₹{getOfferPrice(billingCycle)}
+                    {formatPrice(convertPrice(getOfferPriceInINR(billingCycle), currency), currency)}
                     <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                   </p>
                   {isIndependenceDayOffer() && (
