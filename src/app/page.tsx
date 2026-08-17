@@ -7,17 +7,17 @@ import { ArrowRight, Cable, CheckCircle2, Crown, FileText, GraduationCap, Menu, 
 const highlights = [
   {
     title: 'AI Project Packs',
-    body: 'Generate firmware, BOM, wiring, safety notes, testing steps, and troubleshooting from one robotics idea.',
+    body: 'Generate Arduino firmware, BOM, wiring diagrams, safety notes, testing steps, and troubleshooting from one robotics idea. Best AI project generator for Arduino projects.',
     Icon: Sparkles,
   },
   {
     title: 'Pro Reports & Quiz',
-    body: 'School-ready documentation with timed viva practice, presentation slides, and teacher reports for Pro users.',
+    body: 'School-ready documentation with timed viva practice, presentation slides, and teacher reports for Pro users. Perfect for STEM education and Indian students.',
     Icon: GraduationCap,
   },
   {
     title: 'Wiring Help',
-    body: 'Move from pin lists to cleaner wiring guidance and visual diagrams for Pro workspaces.',
+    body: 'Move from pin lists to cleaner wiring guidance and visual circuit diagrams for Pro workspaces. Best circuit diagram generator for electronics projects.',
     Icon: Cable,
   },
 ];
@@ -74,13 +74,13 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
-              <GraduationCap className="h-4 w-4" /> Robotics project builder for students
+              <GraduationCap className="h-4 w-4" /> AI-Powered Arduino Project Generator for Indian Students
             </div>
             <h1 className="mt-5 max-w-4xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">
-              Build robotics projects faster, with reports ready for class.
+              Build Arduino robotics projects faster with AI. Best STEM education tool for Indian students.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-zinc-400 md:text-lg">
-              CircuitAI turns a student project idea into a practical build pack with code, wiring, parts, testing, troubleshooting, and teacher-style documentation.
+              CircuitAI is the best Arduino project maker online for Indian students. Generate complete robotics projects with AI-powered circuit diagrams, Arduino code, wiring guides, and documentation. Perfect for STEM education, robotics for beginners, and electronics projects. Your ultimate robotics learning platform.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/workspace" className="h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
@@ -134,6 +134,7 @@ export default function HomePage() {
           <Link href="/cancellation-refund" className="hover:text-teal-300 transition">Cancellation & Refund</Link>
           <Link href="/shipping-exchange" className="hover:text-teal-300 transition">Shipping & Exchange</Link>
           <Link href="/contact" className="hover:text-teal-300 transition">Contact</Link>
+          <Link href="/faq" className="hover:text-teal-300 transition">FAQ</Link>
           <Link href="/status-github" className="hover:text-teal-300 transition">GitHub Status</Link>
           <Link href="/status-razorpay" className="hover:text-teal-300 transition">Payment Gateway Status</Link>
           <Link href="/status-vercel" className="hover:text-teal-300 transition">Hosting Status</Link>

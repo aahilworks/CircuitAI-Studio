@@ -6,76 +6,76 @@ import { ArrowRight, Bot, Cable, CheckCircle2, Code2, Crown, FileText, Graduatio
 
 const featureGroups = [
   {
-    title: 'Project Generation',
+    title: 'AI Project Generation',
     features: [
-      'Student-friendly robotics project packs',
+      'Student-friendly robotics project packs with AI',
       'Arduino, ESP32, Pico, NodeMCU, and custom board prompts',
-      'Firmware, wiring, BOM, tools, and safety notes',
-      'Smart parts list with price ranges and alternatives',
-      'Modify an existing build without starting again',
+      'Arduino firmware, wiring diagrams, BOM, tools, and safety notes',
+      'Smart parts list with price ranges and alternatives for Indian students',
+      'Modify existing Arduino projects without starting again',
     ],
     Icon: Bot,
   },
   {
-    title: 'Build Guidance',
+    title: 'Circuit Diagram & Wiring',
     features: [
-      'Pin-by-pin wiring lists',
-      'Advanced visual wiring diagram for Pro',
-      'Assembly routine with beginner-safe steps',
-      'Board-specific code upload guide',
-      'Troubleshooting and calibration checklist',
+      'Pin-by-pin Arduino wiring lists',
+      'Advanced visual circuit diagram for Pro users',
+      'Assembly routine with beginner-safe steps for electronics projects',
+      'Board-specific Arduino code upload guide',
+      'Troubleshooting and calibration checklist for robotics',
     ],
     Icon: Cable,
   },
   {
-    title: 'Upload & Simulation',
+    title: 'Arduino Upload & Simulation',
     features: [
-      'IDE setup, board package, and library checklist',
-      'Common upload errors and fixes',
-      'Premium simulation lab with inputs and outputs',
+      'Arduino IDE setup, board package, and library checklist',
+      'Common Arduino upload errors and fixes',
+      'Premium simulation lab with inputs and outputs for robotics',
       'Expected behavior before powering hardware',
     ],
     Icon: PlayCircle,
   },
   {
-    title: 'Parts Shopping',
+    title: 'Parts Shopping Guide',
     features: [
-      'Quantity-based bill of materials',
-      'Estimated student-market price ranges',
-      'Buying tips for each component',
-      'Alternative compatible components',
+      'Quantity-based bill of materials for Arduino projects',
+      'Estimated student-market price ranges in India',
+      'Buying tips for each electronics component',
+      'Alternative compatible components for Arduino',
     ],
     Icon: ShoppingCart,
   },
   {
-    title: 'Learning & Reports',
+    title: 'STEM Education & Reports',
     features: [
-      'Learning goals for every project',
-      'Teacher report mode with abstract and conclusion',
+      'Learning goals for every robotics project',
+      'Teacher report mode with abstract and conclusion for STEM',
       'Viva questions for presentation practice',
       'Marking rubric for teachers',
-      'PDF / print report export for Pro',
+      'PDF / print report export for Pro users',
     ],
     Icon: GraduationCap,
   },
   {
-    title: 'Pro Features',
+    title: 'Pro Features for Students',
     features: [
-      'Timed viva practice quiz with scoring',
+      'Timed viva practice quiz with scoring for Indian students',
       'Presentation slides with speaker notes',
-      'School-ready teacher reports',
-      'Unlimited AI generations and modifications',
-      'Unlimited saved project history',
+      'School-ready teacher reports for STEM education',
+      'Unlimited AI generations and modifications for Arduino projects',
+      'Unlimited saved project history for robotics learning',
     ],
     Icon: Crown,
   },
   {
-    title: 'Workspace',
+    title: 'Robotics Workspace',
     features: [
-      'Firebase sign-in required for saved work',
-      'Saved project history with search and board filters',
-      'Free and Pro usage limits',
-      'Pro monthly subscription via Razorpay',
+      'Firebase sign-in required for saved Arduino projects',
+      'Saved robotics project history with search and board filters',
+      'Free and Pro usage limits for STEM education',
+      'Pro monthly subscription via Razorpay for Indian students',
       'Pro status synced live from Firebase',
     ],
     Icon: Wrench,
@@ -128,9 +128,9 @@ export default function FeaturesPage() {
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
             <Code2 className="h-4 w-4" /> Features
           </div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Everything students need to finish robotics projects.</h1>
+          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zinc-50 md:text-6xl">Complete Arduino robotics project features for Indian students. Best STEM education tool.</h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-            CircuitAI is built around the full student workflow: idea, code, wiring, assembly, testing, debugging, documentation, and presentation.
+            CircuitAI is the best Arduino project maker online with AI-powered features for Indian students. Generate Arduino code, circuit diagrams, wiring guides, and complete robotics projects. Perfect for STEM education, robotics for beginners, and electronics projects.
           </p>
         </div>
       </section>
