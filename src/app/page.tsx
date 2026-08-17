@@ -134,6 +134,9 @@ export default function HomePage() {
           <Link href="/cancellation-refund" className="hover:text-teal-300 transition">Cancellation & Refund</Link>
           <Link href="/shipping-exchange" className="hover:text-teal-300 transition">Shipping & Exchange</Link>
           <Link href="/contact" className="hover:text-teal-300 transition">Contact</Link>
+          <Link href="/status-github" className="hover:text-teal-300 transition">GitHub Status</Link>
+          <Link href="/status-razorpay" className="hover:text-teal-300 transition">Payment Gateway Status</Link>
+          <Link href="/status-vercel" className="hover:text-teal-300 transition">Hosting Status</Link>
         </div>
       </footer>
     </main>
