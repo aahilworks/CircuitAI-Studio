@@ -1,0 +1,22 @@
+# Allow all crawlers to access the site
+User-agent: *
+Allow: /
+
+# Disallow API routes and admin areas
+Disallow: /api/
+Disallow: /_next/
+Disallow: /share/
+
+# Allow specific important pages
+Allow: /pricing
+Allow: /features
+Allow: /dashboard
+Allow: /workspace
+Allow: /terms
+Allow: /privacy
+Allow: /contact
+Allow: /cancellation-refund
+Allow: /shipping-exchange
+
+# Sitemap location
+Sitemap: https://www.circuitai.in/sitemap.xml
