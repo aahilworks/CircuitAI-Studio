@@ -92,13 +92,15 @@ export default function FAQPage() {
             <div key={index} className="rounded-lg border border-zinc-800 bg-zinc-900/70 overflow-hidden">
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                aria-expanded={openIndex === index}
+                aria-controls={`faq-answer-${index}`}
                 className="w-full flex items-center justify-between p-5 text-left"
               >
                 <h3 className="text-sm font-bold text-zinc-100 pr-4">{faq.question}</h3>
-                <ChevronDown className={`h-5 w-5 text-zinc-500 transition-transform ${openIndex === index ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-5 w-5 text-zinc-500 transition-transform ${openIndex === index ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
               {openIndex === index && (
-                <div className="px-5 pb-5 pt-0">
+                <div id={`faq-answer-${index}`} className="px-5 pb-5 pt-0">
                   <p className="text-sm text-zinc-400 leading-relaxed">{faq.answer}</p>
                 </div>
               )}

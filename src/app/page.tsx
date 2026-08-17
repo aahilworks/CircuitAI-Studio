@@ -46,6 +46,8 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMobileMenuOpen}
             className="md:hidden h-9 w-9 flex items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-teal-300 transition"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -58,12 +60,16 @@ export default function HomePage() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pt-4 border-t border-zinc-800 flex flex-col gap-4">
-            <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Features</Link>
-            <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Pricing</Link>
-            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Dashboard</Link>
-            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition">Workspace</Link>
-            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+          <div
+            role="navigation"
+            aria-label="Mobile navigation"
+            className="md:hidden mt-4 pt-4 border-t border-zinc-800 flex flex-col gap-4"
+          >
+            <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition py-2">Features</Link>
+            <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition py-2">Pricing</Link>
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition py-2">Dashboard</Link>
+            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-zinc-400 hover:text-teal-300 transition py-2">Workspace</Link>
+            <Link href="/workspace" onClick={() => setIsMobileMenuOpen(false)} className="h-12 min-h-[44px] px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
               Open App <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -83,10 +89,16 @@ export default function HomePage() {
               CircuitAI is the best Arduino project maker online for students. Generate complete robotics projects with AI-powered circuit diagrams, Arduino code, wiring guides, and documentation. Perfect for STEM education, robotics for beginners, and electronics projects. Your ultimate robotics learning platform.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/workspace" className="h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+              <Link
+                href="/workspace"
+                className="h-12 min-h-[44px] px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+              >
                 Start Building <Sparkles className="h-4 w-4" />
               </Link>
-              <Link href="/pricing" className="h-11 px-5 bg-zinc-900 border border-zinc-800 hover:border-teal-800 text-zinc-300 hover:text-teal-300 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+              <Link
+                href="/pricing"
+                className="h-12 min-h-[44px] px-5 bg-zinc-900 border border-zinc-800 hover:border-teal-800 text-zinc-300 hover:text-teal-300 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+              >
                 Pro Subscription <Crown className="h-4 w-4" />
               </Link>
             </div>
