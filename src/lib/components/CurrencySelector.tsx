@@ -7,6 +7,8 @@ interface CurrencySelectorProps {
   onCurrencyChange: (currency: Currency) => void;
 }
 
+const COMING_SOON_CURRENCIES: Currency[] = ['AED', 'SGD', 'CNY', 'CHF', 'SEK'];
+
 export default function CurrencySelector({ currency, onCurrencyChange }: CurrencySelectorProps) {
   const currencyList = getCurrencyList();
 
@@ -18,11 +20,18 @@ export default function CurrencySelector({ currency, onCurrencyChange }: Currenc
         className="appearance-none bg-zinc-900 border border-zinc-800 text-zinc-100 text-sm rounded-lg px-3 py-2 pr-8 hover:border-teal-700 focus:outline-none focus:border-teal-600 cursor-pointer"
         aria-label="Select currency"
       >
-        {currencyList.map((curr) => (
-          <option key={curr.code} value={curr.code}>
-            {curr.flag} {curr.code} - {curr.name}
-          </option>
-        ))}
+        {currencyList.map((curr) => {
+          const isComingSoon = COMING_SOON_CURRENCIES.includes(curr.code);
+          return (
+            <option 
+              key={curr.code} 
+              value={curr.code}
+              disabled={isComingSoon}
+            >
+              {curr.flag} {curr.code} - {curr.name} {isComingSoon ? '(Coming Soon)' : ''}
+            </option>
+          );
+        })}
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
