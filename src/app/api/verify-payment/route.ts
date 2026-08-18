@@ -10,6 +10,7 @@ interface VerifySubscriptionBody {
   razorpay_payment_id?: string;
   razorpay_signature?: string;
   billingCycle?: 'monthly' | 'yearly';
+  currency?: string;
 }
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));

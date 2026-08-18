@@ -1,21 +1,5 @@
 import type { User } from 'firebase/auth';
-
-// Independence Day Offer: August 15, 2026 (80th Independence Day)
-// Offer valid for 5 days: August 15-19, 2026
-const INDEPENDENCE_DAY_START = new Date('2026-08-15T00:00:00.000Z');
-const INDEPENDENCE_DAY_END = new Date('2026-08-20T00:00:00.000Z');
-
-const isIndependenceDayOffer = () => {
-  const now = new Date();
-  return now >= INDEPENDENCE_DAY_START && now < INDEPENDENCE_DAY_END;
-};
-
-const getOfferPrice = (billingCycle: 'monthly' | 'yearly') => {
-  if (!isIndependenceDayOffer()) {
-    return billingCycle === 'yearly' ? '₹6,999' : '₹999';
-  }
-  return billingCycle === 'yearly' ? '₹5,999' : '₹699';
-};
+import { Currency } from './currency';
 
 interface RazorpaySubscriptionResponse {
   razorpay_payment_id: string;
@@ -57,6 +41,7 @@ const loadRazorpayScript = (): Promise<boolean> =>
 interface InitiateProSubscriptionOptions {
   currentUser: User;
   billingCycle?: 'monthly' | 'yearly';
+  currency?: Currency;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -64,6 +49,7 @@ interface InitiateProSubscriptionOptions {
 export async function initiateProSubscription({
   currentUser,
   billingCycle = 'monthly',
+  currency = 'INR',
   onSuccess,
   onError,
 }: InitiateProSubscriptionOptions): Promise<void> {
@@ -93,7 +79,7 @@ export async function initiateProSubscription({
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ billingCycle }),
+      body: JSON.stringify({ billingCycle, currency }),
     });
 
     const subscriptionData = await subscriptionRes.json();
@@ -111,11 +97,7 @@ export async function initiateProSubscription({
     }
 
     const isTestMode = razorpayKey.startsWith('rzp_test_');
-    
-    // Use Independence Day offer pricing if active
-    const price = getOfferPrice(billingCycle);
     const period = isYearly ? 'year' : 'month';
-    const offerText = isIndependenceDayOffer() ? '🇮🇳 Independence Day Special - ' : '';
     const paymentType = isYearly ? 'One-time Payment' : 'Subscription';
 
     const razorpayInstance = new window.Razorpay({
@@ -123,8 +105,8 @@ export async function initiateProSubscription({
       ...(isYearly ? { order_id: subscriptionData.order_id } : { subscription_id: subscriptionData.subscription_id }),
       name: 'CircuitAI',
       description: isTestMode
-        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} - ${price}/${period}`
-        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} - ${price}/${period}`,
+        ? `Pro ${isYearly ? 'Yearly' : 'Monthly'} - ${currency}/${period}`
+        : `Pro ${isYearly ? 'Yearly' : 'Monthly'} - ${currency}/${period}`,
       prefill: {
         email: currentUser.email || '',
         name: currentUser.displayName || undefined,
@@ -138,7 +120,7 @@ export async function initiateProSubscription({
               Authorization: `Bearer ${verifyToken}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...response, billingCycle }),
+            body: JSON.stringify({ ...response, billingCycle, currency }),
           });
 
           const verifyData = await verifyRes.json();

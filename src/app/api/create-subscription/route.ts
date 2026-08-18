@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { requireAuthUser } from '@/lib/server/auth';
-import { getRazorpayClient, getRazorpayPlanId, getRazorpayYearlyPlanId, getTrialDays } from '@/lib/server/razorpay';
+import { getRazorpayClient, getRazorpayPlanId, getTrialDays } from '@/lib/server/razorpay';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { hasActiveProAccess } from '@/lib/proAccess';
+import { Currency } from '@/lib/currency';
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Failed to create subscription.';
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const billingCycle = body.billingCycle || 'monthly';
+    const currency = (body.currency || 'INR') as Currency;
 
     if (billingCycle === 'yearly') {
       return NextResponse.json({ error: 'Yearly payments use one-time payment. Please use the yearly option.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -35,14 +37,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You already have an active Pro subscription.' }, { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Use Razorpay for India
+    // Use Razorpay for international payments
     const razorpay = getRazorpayClient();
     const trialDays = getTrialDays();
     const startAt =
       trialDays > 0 ? Math.floor(Date.now() / 1000) + trialDays * 24 * 60 * 60 : undefined;
 
-    const planId = getRazorpayPlanId(); // Only monthly plan for subscriptions
-    const product = 'circuitai_pro_monthly';
+    const planId = getRazorpayPlanId(currency, billingCycle);
+    const product = `circuitai_pro_${billingCycle}`;
     const totalCount = 12; // Monthly subscription for 12 months
 
     const subscription = await razorpay.subscriptions.create({

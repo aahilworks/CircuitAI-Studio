@@ -9,6 +9,11 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import { ArrowRight, CheckCircle2, CreditCard, Crown, Lock, Menu, RefreshCw, Sparkles, X } from 'lucide-react';
+import { getFormattedPrice } from '@/lib/currency';
+import CurrencySelector from '@/lib/components/CurrencySelector';
+import { Currency } from '@/lib/currency';
+
+export const dynamic = 'force-dynamic';
 
 const freeFeatures = [
   '5 AI Arduino projects per month for beginners',
@@ -40,6 +45,8 @@ const getPrice = (billingCycle: 'monthly' | 'yearly') => {
 };
 
 export default function PricingPage() {
+  const [isMounted, setIsMounted] = useState(false);
+  const [currency, setCurrency] = useState<'INR' | 'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD' | 'DKK' | 'AED' | 'SGD' | 'CNY' | 'CHF' | 'SEK'>('INR');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isProUser, setIsProUser] = useState(false);
@@ -47,6 +54,20 @@ export default function PricingPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('circuitai-currency', newCurrency);
+  };
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Detect currency from localStorage or browser locale
+    const savedCurrency = localStorage.getItem('circuitai-currency') as any;
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -99,6 +120,7 @@ export default function PricingPage() {
     await initiateProSubscription({
       currentUser,
       billingCycle,
+      currency,
       onSuccess: (message) => alert(message),
       onError: (message) => alert(message),
     });
@@ -108,6 +130,12 @@ export default function PricingPage() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-teal-500/30">
+      {!isMounted ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-zinc-400">Loading...</div>
+        </div>
+      ) : (
+        <>
       <header className="border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 md:px-8">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
@@ -161,29 +189,32 @@ export default function PricingPage() {
           </p>
           
           {/* Billing Cycle Toggle */}
-          <div className="mt-8 flex items-center gap-3 sm:gap-4">
-            <button
-              type="button"
-              onClick={() => setBillingCycle('monthly')}
-              className={`text-xs sm:text-sm font-bold transition ${billingCycle === 'monthly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              Monthly
-            </button>
-            <div className="h-6 w-11 rounded-full bg-zinc-800 relative cursor-pointer" onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}>
-              <div className={`absolute top-1 h-4 w-4 rounded-full bg-teal-300 transition-all ${billingCycle === 'monthly' ? 'left-1' : 'left-6'}`} />
+          <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={() => setBillingCycle('monthly')}
+                className={`text-xs sm:text-sm font-bold transition ${billingCycle === 'monthly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Monthly
+              </button>
+              <div className="h-6 w-11 rounded-full bg-zinc-800 relative cursor-pointer" onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}>
+                <div className={`absolute top-1 h-4 w-4 rounded-full bg-teal-300 transition-all ${billingCycle === 'monthly' ? 'left-1' : 'left-6'}`} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setBillingCycle('yearly')}
+                className={`text-xs sm:text-sm font-bold transition ${billingCycle === 'yearly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Yearly
+              </button>
+              {billingCycle === 'yearly' && (
+                <span className="text-[10px] sm:text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
+                  Save 14%
+                </span>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={() => setBillingCycle('yearly')}
-              className={`text-xs sm:text-sm font-bold transition ${billingCycle === 'yearly' ? 'text-teal-300' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              Yearly
-            </button>
-            {billingCycle === 'yearly' && (
-              <span className="text-[10px] sm:text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
-                Save 14%
-              </span>
-            )}
+            <CurrencySelector currency={currency} onCurrencyChange={handleCurrencyChange} />
           </div>
         </div>
       </section>
@@ -211,7 +242,7 @@ export default function PricingPage() {
                 <p className="mt-2 text-sm text-teal-100/70">For students who need reports, revisions, and serious project history.</p>
                 <div className="mt-4">
                   <p className="text-3xl font-black text-zinc-50">
-                    ₹{getPrice(billingCycle)}
+                    {getFormattedPrice(billingCycle, currency)}
                     <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                   </p>
                   <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
@@ -273,6 +304,8 @@ export default function PricingPage() {
       </section>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} user={currentUser} />
+      </>
+      )}
     </main>
   );
 }

@@ -3,6 +3,7 @@ import { requireAuthUser } from '@/lib/server/auth';
 import { getRazorpayClient } from '@/lib/server/razorpay';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { hasActiveProAccess } from '@/lib/proAccess';
+import { Currency, getPrice } from '@/lib/currency';
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Failed to create order.';
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const billingCycle = body.billingCycle || 'yearly';
+    const currency = (body.currency || 'INR') as Currency;
 
     if (billingCycle !== 'yearly') {
       return NextResponse.json({ error: 'This endpoint is for yearly one-time payment only.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -35,14 +37,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You already have an active Pro subscription.' }, { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Independence Day Offer pricing
-    const INDEPENDENCE_DAY_START = new Date('2026-08-15T00:00:00.000Z');
-    const INDEPENDENCE_DAY_END = new Date('2026-08-20T00:00:00.000Z');
-    const now = new Date();
-    const isOfferActive = now >= INDEPENDENCE_DAY_START && now < INDEPENDENCE_DAY_END;
-    
-    const amount = isOfferActive ? 599900 : 699900; // Razorpay uses paise (₹5999 = 599900 paise)
-    const currency = 'INR';
+    // Calculate amount based on currency
+    const priceInCurrency = getPrice('yearly', currency);
+    // Convert to smallest currency unit (e.g., paise for INR, cents for USD)
+    const amount = Math.round(priceInCurrency * 100);
 
     // Create Razorpay order for one-time payment
     const razorpay = getRazorpayClient();
@@ -54,7 +52,6 @@ export async function POST(request: Request) {
         userId: user.uid,
         product: 'circuitai_pro_yearly_onetime',
         billingCycle: 'yearly',
-        isOfferActive: isOfferActive.toString(),
       },
     });
 

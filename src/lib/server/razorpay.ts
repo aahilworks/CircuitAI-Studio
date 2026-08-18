@@ -1,6 +1,7 @@
 import 'server-only';
 
 import Razorpay from 'razorpay';
+import { Currency } from '../currency';
 
 let razorpayClient: Razorpay | null = null;
 
@@ -38,18 +39,13 @@ export function getRazorpayWebhookSecret(): string {
   return secret;
 }
 
-export function getRazorpayPlanId(): string {
-  const planId = process.env.RAZORPAY_PLAN_ID?.trim();
+export function getRazorpayPlanId(currency: Currency, billingCycle: 'monthly' | 'yearly'): string {
+  const suffix = billingCycle === 'yearly' ? '_YEARLY' : '';
+  const envVar = `RAZORPAY_PLAN_ID_${currency}${suffix}`;
+  const planId = process.env[envVar]?.trim();
+  
   if (!planId) {
-    throw new Error('RAZORPAY_PLAN_ID is not configured. Create a test plan in Razorpay Dashboard.');
-  }
-  return planId;
-}
-
-export function getRazorpayYearlyPlanId(): string {
-  const planId = process.env.RAZORPAY_YEARLY_PLAN_ID?.trim();
-  if (!planId) {
-    throw new Error('RAZORPAY_YEARLY_PLAN_ID is not configured. Create a yearly test plan in Razorpay Dashboard.');
+    throw new Error(`${envVar} is not configured. Create a ${billingCycle} ${currency} plan in Razorpay Dashboard.`);
   }
   return planId;
 }
