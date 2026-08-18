@@ -44,9 +44,9 @@ export async function POST(request: Request) {
     const startAt =
       trialDays > 0 ? Math.floor(Date.now() / 1000) + trialDays * 24 * 60 * 60 : undefined;
 
-    const planId = getRazorpayPlanId(currency, newBillingCycle);
-    const product = newBillingCycle === 'yearly' ? 'circuitai_pro_yearly' : 'circuitai_pro_monthly';
-    const totalCount = newBillingCycle === 'yearly' ? 1 : 12;
+    const planId = getRazorpayPlanId(currency);
+    const product = 'circuitai_pro_monthly';
+    const totalCount = 12;
 
     const subscription = await razorpay.subscriptions.create({
       plan_id: planId,

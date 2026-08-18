@@ -39,13 +39,12 @@ export function getRazorpayWebhookSecret(): string {
   return secret;
 }
 
-export function getRazorpayPlanId(currency: Currency, billingCycle: 'monthly' | 'yearly'): string {
-  const suffix = billingCycle === 'yearly' ? '_YEARLY' : '';
-  const envVar = `RAZORPAY_PLAN_ID_${currency}${suffix}`;
+export function getRazorpayPlanId(currency: Currency): string {
+  const envVar = `RAZORPAY_PLAN_ID_${currency}`;
   const planId = process.env[envVar]?.trim();
   
   if (!planId) {
-    throw new Error(`${envVar} is not configured. Create a ${billingCycle} ${currency} plan in Razorpay Dashboard.`);
+    throw new Error(`${envVar} is not configured. Create a monthly ${currency} plan in Razorpay Dashboard.`);
   }
   return planId;
 }
