@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Cable, CheckCircle2, Crown, FileText, GraduationCap, Menu, Sparkles, X } from 'lucide-react';
 import CurrencySelector from '@/lib/components/CurrencySelector';
-import { Currency } from '@/lib/currency';
+import { Currency, getFormattedPrice } from '@/lib/currency';
 
 const highlights = [
   {

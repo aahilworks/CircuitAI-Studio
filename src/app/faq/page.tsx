@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { ArrowLeft, HelpCircle, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import CurrencySelector from '@/lib/components/CurrencySelector';
+import { Currency, getFormattedPrice } from '@/lib/currency';
 
 const faqs = [
   {
@@ -31,7 +33,8 @@ const faqs = [
   },
   {
     question: "How much does CircuitAI cost for students?",
-    answer: "CircuitAI offers a free tier with 5 AI Arduino projects per month. Pro subscription starts at ₹699/month for unlimited robotics projects. Best Arduino project maker pricing for students with affordable STEM education solutions."
+    answer: "CircuitAI offers a free tier with 5 AI Arduino projects per month. Pro subscription starts at {price}/month for unlimited robotics projects. Best Arduino project maker pricing for students with affordable STEM education solutions.",
+    hasPrice: true,
   },
   {
     question: "Can CircuitAI help with Arduino programming and code?",
@@ -69,6 +72,26 @@ const faqs = [
 
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<Currency>('INR');
+
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('circuitai-currency', newCurrency);
+  };
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('circuitai-currency') as Currency;
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
+
+  const faqsWithPrices = faqs.map(faq => ({
+    ...faq,
+    answer: faq.hasPrice 
+      ? faq.answer.replace('{price}', getFormattedPrice('monthly', currency))
+      : faq.answer
+  }));
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -88,7 +111,7 @@ export default function FAQPage() {
 
       <section className="px-4 py-12 md:px-8">
         <div className="mx-auto max-w-4xl space-y-4">
-          {faqs.map((faq, index) => (
+          {faqsWithPrices.map((faq, index) => (
             <div key={index} className="rounded-lg border border-zinc-800 bg-zinc-900/70 overflow-hidden">
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
@@ -115,12 +138,15 @@ export default function FAQPage() {
           <p className="text-sm text-zinc-400 mb-4">
             Contact our support team for help with Arduino projects, robotics education, STEM education tools, or any questions about CircuitAI.
           </p>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase transition"
-          >
-            Contact Support
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase transition"
+            >
+              Contact Support
+            </Link>
+            <CurrencySelector currency={currency} onCurrencyChange={handleCurrencyChange} />
+          </div>
         </div>
       </section>
     </main>
