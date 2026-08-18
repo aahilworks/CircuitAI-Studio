@@ -1,4 +1,4 @@
-export type Currency = 'INR' | 'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD' | 'DKK' | 'AED' | 'SGD' | 'CNY' | 'CHF' | 'SEK';
+export type Currency = 'INR' | 'USD' | 'GBP' | 'EUR' | 'CAD' | 'DKK' | 'AUD' | 'AED' | 'SGD' | 'CNY' | 'CHF' | 'SEK';
 
 export interface CurrencyInfo {
   code: Currency;

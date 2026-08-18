@@ -7,7 +7,7 @@ interface CurrencySelectorProps {
   onCurrencyChange: (currency: Currency) => void;
 }
 
-const COMING_SOON_CURRENCIES: Currency[] = ['AED', 'SGD', 'CNY', 'CHF', 'SEK'];
+const COMING_SOON_CURRENCIES: Currency[] = ['AUD', 'AED', 'SGD', 'CNY', 'CHF', 'SEK'];
 
 export default function CurrencySelector({ currency, onCurrencyChange }: CurrencySelectorProps) {
   const currencyList = getCurrencyList();
