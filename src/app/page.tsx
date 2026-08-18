@@ -150,6 +150,7 @@ export default function HomePage() {
           <Link href="/status-github" className="hover:text-teal-300 transition">GitHub Status</Link>
           <Link href="/status-razorpay" className="hover:text-teal-300 transition">Payment Gateway Status</Link>
           <Link href="/status-vercel" className="hover:text-teal-300 transition">Hosting Status</Link>
+          <Link href="/status-gemini" className="hover:text-teal-300 transition">AI Service Status</Link>
         </div>
       </footer>
     </main>
