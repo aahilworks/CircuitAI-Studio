@@ -4,6 +4,28 @@ CircuitAI is a robotics project builder for students. A student describes what t
 
 Founder & Developer: [AahilWorks](https://aahilworks.github.io)
 
+## License
+
+**IMPORTANT: This is proprietary software.**
+
+CircuitAI is NOT open source. This software and its source code are the exclusive property of AahilWorks and are protected by copyright laws and international treaties.
+
+You may NOT:
+- Copy, modify, or create derivative works of this software
+- Reverse engineer, decompile, or disassemble this software
+- Remove or alter any proprietary notices on this software
+- Distribute, sublicense, lease, rent, or lend this software
+- Use this software for any commercial purpose other than accessing CircuitAI services
+- Use this software to compete with CircuitAI or AahilWorks
+- Use any portion of this code in your own projects without explicit written permission
+- Republish the source code in any form (public or private repositories, websites, etc.)
+
+For licensing inquiries or permissions, contact: support@circuitai.in
+
+Any unauthorized use of this software is strictly prohibited and may result in legal action.
+
+See the [LICENSE](LICENSE) file for the complete license agreement.
+
 ## Features
 
 - AI-generated robotics project packs for Arduino, ESP32, Raspberry Pi Pico, and similar boards

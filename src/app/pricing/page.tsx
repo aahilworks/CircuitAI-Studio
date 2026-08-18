@@ -35,25 +35,8 @@ const proFeatures = [
   'Student-friendly Arduino code explanations',
 ];
 
-// Independence Day Offer: August 15, 2026 (80th Independence Day)
-// Offer valid for 5 days: August 15-19, 2026
-const INDEPENDENCE_DAY_START = new Date('2026-08-15T00:00:00.000Z');
-const INDEPENDENCE_DAY_END = new Date('2026-08-20T00:00:00.000Z');
-
-const isIndependenceDayOffer = () => {
-  const now = new Date();
-  return now >= INDEPENDENCE_DAY_START && now < INDEPENDENCE_DAY_END;
-};
-
-const getOfferPrice = (billingCycle: 'monthly' | 'yearly') => {
-  if (!isIndependenceDayOffer()) {
-    return billingCycle === 'yearly' ? '6,999' : '999';
-  }
+const getPrice = (billingCycle: 'monthly' | 'yearly') => {
   return billingCycle === 'yearly' ? '5,999' : '699';
-};
-
-const getOriginalPrice = (billingCycle: 'monthly' | 'yearly') => {
-  return billingCycle === 'yearly' ? '6,999' : '999';
 };
 
 export default function PricingPage() {
@@ -169,12 +152,6 @@ export default function PricingPage() {
 
       <section className="bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_34rem)] px-4 py-14 md:px-8 md:py-20">
         <div className="mx-auto max-w-6xl">
-          {isIndependenceDayOffer() && (
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-300 border border-orange-700/60 bg-orange-950/40 px-3 py-1.5 rounded-lg mb-4">
-              <Sparkles className="h-4 w-4 fill-orange-300" />
-              🇮🇳 80th Independence Day Special - Limited Time Offer!
-            </div>
-          )}
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
             <Crown className="h-4 w-4 fill-teal-300" /> Premium
           </div>
@@ -204,7 +181,7 @@ export default function PricingPage() {
             </button>
             {billingCycle === 'yearly' && (
               <span className="text-[10px] sm:text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800 px-2 py-1 rounded-md">
-                {isIndependenceDayOffer() ? 'Save 14%' : 'Save 42%'}
+                Save 14%
               </span>
             )}
           </div>
@@ -233,20 +210,10 @@ export default function PricingPage() {
                 <h2 className="text-xl font-black text-teal-100">CircuitAI Pro</h2>
                 <p className="mt-2 text-sm text-teal-100/70">For students who need reports, revisions, and serious project history.</p>
                 <div className="mt-4">
-                  {isIndependenceDayOffer() && (
-                    <p className="text-sm font-semibold text-zinc-500 line-through">
-                      ₹{getOriginalPrice(billingCycle)}/{billingCycle === 'yearly' ? 'year' : 'month'}
-                    </p>
-                  )}
                   <p className="text-3xl font-black text-zinc-50">
-                    ₹{getOfferPrice(billingCycle)}
+                    ₹{getPrice(billingCycle)}
                     <span className="text-base font-bold text-teal-100/70">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
                   </p>
-                  {isIndependenceDayOffer() && (
-                    <p className="mt-1 text-xs font-semibold text-orange-300">
-                      🇮🇳 Independence Day Special - Limited time offer!
-                    </p>
-                  )}
                   <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/80">
                     {billingCycle === 'yearly' ? 'One-time payment for 1 year access' : '2-day free trial, then billed monthly for 12 months'}
                   </p>
