@@ -8,6 +8,8 @@ import { collection, getDocs, query, orderBy, doc, setDoc, onSnapshot } from 'fi
 import AuthModal from '@/lib/components/AuthModal';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
 import { hasActiveProAccess } from '@/lib/proAccess';
+import CurrencySelector from '@/lib/components/CurrencySelector';
+import { Currency } from '@/lib/currency';
 import {
   ArrowRight,
   Award,
@@ -193,6 +195,19 @@ export default function Home() {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [presentationSlideIndex, setPresentationSlideIndex] = useState(0);
   const [isPresentationFullscreen, setIsPresentationFullscreen] = useState(false);
+  const [currency, setCurrency] = useState<Currency>('INR');
+
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('circuitai-currency', newCurrency);
+  };
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('circuitai-currency') as Currency;
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
 
   const resetWorkspace = useCallback(() => {
     setCurrentSessionId(null);
@@ -675,6 +690,7 @@ Return the full updated schema, including code, wiring, safety, testing, trouble
 
     await initiateProSubscription({
       currentUser,
+      currency,
       onSuccess: (message) => alert(message),
       onError: (message) => alert(message),
     });
@@ -1040,10 +1056,13 @@ ${data.secondary_code}
               <span>Pro</span>
             </div>
           ) : (
-            <button type="button" onClick={() => initiateCheckout()} disabled={isProcessingPayment} className="flex items-center gap-1.5 border border-teal-500/40 bg-teal-950/60 hover:bg-teal-900/80 text-teal-300 px-3 py-1.5 rounded-lg text-xs font-bold transition disabled:opacity-50">
-              {isProcessingPayment ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-              <span>Subscribe</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => initiateCheckout()} disabled={isProcessingPayment} className="flex items-center gap-1.5 border border-teal-500/40 bg-teal-950/60 hover:bg-teal-900/80 text-teal-300 px-3 py-1.5 rounded-lg text-xs font-bold transition disabled:opacity-50">
+                {isProcessingPayment ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                <span>Subscribe</span>
+              </button>
+              <CurrencySelector currency={currency} onCurrencyChange={handleCurrencyChange} />
+            </div>
           )}
 
           <button type="button" onClick={() => setIsAuthModalOpen(true)} className="flex items-center gap-2 border border-zinc-800 px-4 py-1.5 rounded-lg text-xs bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition">

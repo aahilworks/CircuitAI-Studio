@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Cable, CheckCircle2, Crown, FileText, GraduationCap, Menu, Sparkles, X } from 'lucide-react';
+import CurrencySelector from '@/lib/components/CurrencySelector';
+import { Currency } from '@/lib/currency';
 
 const highlights = [
   {
@@ -24,6 +26,19 @@ const highlights = [
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currency, setCurrency] = useState<Currency>('INR');
+
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('circuitai-currency', newCurrency);
+  };
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('circuitai-currency') as Currency;
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-teal-500/30">
@@ -88,7 +103,7 @@ export default function HomePage() {
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-zinc-400 md:text-lg">
               CircuitAI is the best Arduino project maker online for students. Generate complete robotics projects with AI-powered circuit diagrams, Arduino code, wiring guides, and documentation. Perfect for STEM education, robotics for beginners, and electronics projects. Your ultimate robotics learning platform.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row items-start sm:items-center">
               <Link
                 href="/workspace"
                 className="h-12 min-h-[44px] px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
@@ -101,6 +116,7 @@ export default function HomePage() {
               >
                 Pro Subscription <Crown className="h-4 w-4" />
               </Link>
+              <CurrencySelector currency={currency} onCurrencyChange={handleCurrencyChange} />
             </div>
           </div>
 

@@ -23,6 +23,8 @@ import {
   User as UserIcon, 
   X 
 } from 'lucide-react';
+import CurrencySelector from '@/lib/components/CurrencySelector';
+import { Currency } from '@/lib/currency';
 
 interface UserData {
   isPro?: boolean;
@@ -50,6 +52,19 @@ export default function DashboardPage() {
   const [projectCount, setProjectCount] = useState(0);
   const [recentProjects, setRecentProjects] = useState<ProjectData[]>([]);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [currency, setCurrency] = useState<Currency>('INR');
+
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('circuitai-currency', newCurrency);
+  };
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('circuitai-currency') as Currency;
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
@@ -348,12 +363,15 @@ export default function DashboardPage() {
                     <Sparkles className="h-4 w-4" />
                     <span className="text-sm">Upgrade to Pro for unlimited projects and advanced features</span>
                   </div>
-                  <Link
-                    href="/pricing"
-                    className="block w-full h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
-                  >
-                    Upgrade to Pro <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href="/pricing"
+                      className="block w-full h-11 px-5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition"
+                    >
+                      Upgrade to Pro <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <CurrencySelector currency={currency} onCurrencyChange={handleCurrencyChange} />
+                  </div>
                 </div>
               )}
             </div>
