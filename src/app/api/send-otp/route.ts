@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
-import nodemailer from 'nodemailer';
+import emailjs from '@emailjs/browser';
 
 // Generate 6-digit OTP
 function generateOTP(): string {
@@ -16,12 +16,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and purpose are required' }, { status: 400 });
     }
 
-    const senderEmail = process.env.EMAIL_OTP_SENDER_EMAIL;
-    const senderPassword = process.env.EMAIL_OTP_SENDER_PASSWORD;
+    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+    const privateKey = process.env.EMAILJS_PRIVATE_KEY;
 
-    if (!senderEmail || !senderPassword) {
-      return NextResponse.json({ error: 'Email configuration not found' }, { status: 500 });
+    if (!serviceId || !templateId || !publicKey || !privateKey) {
+      return NextResponse.json({ error: 'EmailJS configuration not found' }, { status: 500 });
     }
+
+    // Initialize EmailJS with public key
+    emailjs.init(publicKey);
 
     // Check if email already exists in Firestore (for signup)
     if (purpose === 'signup') {
@@ -47,32 +52,14 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     });
 
-    // Send email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: senderEmail,
-        pass: senderPassword,
-      },
-    });
-
-    const mailOptions = {
-      from: senderEmail,
-      to: email,
-      subject: purpose === 'signup' ? 'CircuitAI - Email Verification' : 'CircuitAI - Login OTP',
-      text: `Your OTP for CircuitAI is: ${otp}\n\nThis OTP will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #14b8a6;">CircuitAI</h2>
-          <p>Your OTP for ${purpose === 'signup' ? 'email verification' : 'login'} is:</p>
-          <h1 style="color: #14b8a6; font-size: 32px; letter-spacing: 4px;">${otp}</h1>
-          <p>This OTP will expire in 10 minutes.</p>
-          <p style="color: #666; font-size: 12px;">If you did not request this, please ignore this email.</p>
-        </div>
-      `,
+    // Send email using EmailJS
+    const templateParams = {
+      to_email: email,
+      otp: otp,
+      purpose: purpose === 'signup' ? 'email verification' : 'login',
     };
 
-    await transporter.sendMail(mailOptions);
+    await emailjs.send(serviceId, templateId, templateParams, publicKey);
 
     return NextResponse.json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
