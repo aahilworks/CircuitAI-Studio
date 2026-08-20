@@ -39,6 +39,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // For forgot-password, check if email exists
+    if (purpose === 'forgot-password') {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return NextResponse.json({ error: 'Email not found' }, { status: 400 });
+      }
+    }
+
     // Generate OTP
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry

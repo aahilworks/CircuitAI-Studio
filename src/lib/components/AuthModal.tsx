@@ -93,7 +93,10 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       const response = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, purpose: authMode === 'signup' ? 'signup' : 'login' }),
+        body: JSON.stringify({ 
+          email, 
+          purpose: authMode === 'signup' ? 'signup' : authMode === 'forgot-password' ? 'forgot-password' : 'login' 
+        }),
       });
 
       const data = await response.json();
@@ -158,10 +161,24 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       const token = await executeRecaptcha();
       await verifyRecaptcha(token);
 
+      // Verify OTP first
+      const otpResponse = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, purpose: 'forgot-password' }),
+      });
+
+      const otpData = await otpResponse.json();
+
+      if (!otpResponse.ok) {
+        throw new Error(otpData.error || 'Invalid OTP');
+      }
+
+      // After OTP verification, send password reset email
       const response = await fetch('/api/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, otp }),
       });
 
       const data = await response.json();
@@ -242,7 +259,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                   </div>
                   <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">Forgot your password?</h2>
                   <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                    Enter your email address and we'll send you a link to reset your password.
+                    Enter your email address, get an OTP, and we'll send you a link to reset your password.
                   </p>
                 </div>
 
@@ -252,6 +269,16 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                   <div>
                     <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Email</label>
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">OTP</label>
+                    <div className="flex gap-2">
+                      <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required className="flex-1 h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" placeholder="Enter 6-digit OTP" />
+                      <button type="button" onClick={sendOtp} disabled={loading || otpResendCooldown > 0} className="h-11 px-4 bg-zinc-950 border border-zinc-800 hover:border-teal-700 text-zinc-200 font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 whitespace-nowrap">
+                        {otpResendCooldown > 0 ? `${otpResendCooldown}s` : otpSent ? <RefreshCw className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                        {otpResendCooldown > 0 ? 'Resend' : otpSent ? 'Resend' : 'Send OTP'}
+                      </button>
+                    </div>
                   </div>
                   <button type="submit" disabled={loading} className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg transition disabled:opacity-50">
                     {loading ? 'Please wait...' : 'Send Reset Link'}
