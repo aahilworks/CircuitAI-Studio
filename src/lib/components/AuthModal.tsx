@@ -11,7 +11,7 @@ interface AuthModalProps {
   user: User | null;
 }
 
-type AuthMode = 'login' | 'signup' | 'forgot-password' | 'email-otp';
+type AuthMode = 'login' | 'signup' | 'forgot-password';
 
 const getErrorMessage = (error: unknown) => error instanceof Error ? error.message.replace('Firebase: ', '') : String(error);
 
@@ -120,36 +120,21 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       const token = await executeRecaptcha();
       await verifyRecaptcha(token);
 
-      if (authMode === 'email-otp') {
-        // Verify OTP first
-        const otpResponse = await fetch('/api/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp, purpose: 'login' }),
-        });
+      // Verify OTP first for both signup and login
+      const otpResponse = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, purpose: authMode === 'signup' ? 'signup' : 'login' }),
+      });
 
-        const otpData = await otpResponse.json();
+      const otpData = await otpResponse.json();
 
-        if (!otpResponse.ok) {
-          throw new Error(otpData.error || 'Invalid OTP');
-        }
+      if (!otpResponse.ok) {
+        throw new Error(otpData.error || 'Invalid OTP');
+      }
 
-        // After OTP verification, sign in with email/password
-        await signInWithEmailAndPassword(auth, email, password);
-      } else if (authMode === 'signup') {
-        // For signup, verify OTP first
-        const otpResponse = await fetch('/api/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp, purpose: 'signup' }),
-        });
-
-        const otpData = await otpResponse.json();
-
-        if (!otpResponse.ok) {
-          throw new Error(otpData.error || 'Invalid OTP');
-        }
-
+      // After OTP verification, proceed with auth
+      if (authMode === 'signup') {
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -317,7 +302,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
                   </div>
 
-                  {(authMode === 'signup' || authMode === 'email-otp') && (
+                  {(authMode === 'signup' || authMode === 'login') && (
                     <div>
                       <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">OTP</label>
                       <div className="flex gap-2">
@@ -338,9 +323,6 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                 <div className="flex flex-col gap-2 text-xs text-center text-zinc-500 pt-1">
                   {authMode === 'login' && (
                     <>
-                      <button type="button" onClick={() => switchAuthMode('email-otp')} className="text-teal-300 underline hover:text-teal-200 transition">
-                        Sign in with OTP
-                      </button>
                       <button type="button" onClick={() => switchAuthMode('forgot-password')} className="text-teal-300 underline hover:text-teal-200 transition">
                         Forgot password?
                       </button>
@@ -355,17 +337,6 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                       Already have an account?{' '}
                       <button type="button" onClick={() => switchAuthMode('login')} className="text-teal-300 underline hover:text-teal-200 transition">
                         Sign in
-                      </button>
-                    </>
-                  )}
-                  {authMode === 'email-otp' && (
-                    <>
-                      <button type="button" onClick={() => switchAuthMode('login')} className="text-teal-300 underline hover:text-teal-200 transition">
-                        Sign in with password
-                      </button>
-                      New to CircuitAI?{' '}
-                      <button type="button" onClick={() => switchAuthMode('signup')} className="text-teal-300 underline hover:text-teal-200 transition">
-                        Create one
                       </button>
                     </>
                   )}
