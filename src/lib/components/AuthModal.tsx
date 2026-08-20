@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { auth, googleProvider } from '@/lib/firebase';
 import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
-import { Globe, LogIn, LogOut, UserPlus, X } from 'lucide-react';
+import { Globe, LogIn, LogOut, UserPlus, X, Lock, Mail, RefreshCw } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,16 +11,105 @@ interface AuthModalProps {
   user: User | null;
 }
 
+type AuthMode = 'login' | 'signup' | 'forgot-password' | 'email-otp';
+
 const getErrorMessage = (error: unknown) => error instanceof Error ? error.message.replace('Firebase: ', '') : String(error);
 
 export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpResendCooldown, setOtpResendCooldown] = useState(0);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (otpResendCooldown > 0) {
+      const timer = setTimeout(() => setOtpResendCooldown(otpResendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpResendCooldown]);
+
+  const loadRecaptcha = () => {
+    if (typeof window !== 'undefined' && !window.grecaptcha) {
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadRecaptcha();
+    }
+  }, [isOpen]);
+
+  const executeRecaptcha = async (): Promise<string> => {
+    if (typeof window === 'undefined' || !window.grecaptcha) {
+      throw new Error('reCAPTCHA not loaded');
+    }
+
+    return new Promise((resolve, reject) => {
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!, { action: 'submit' })
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+  };
+
+  const verifyRecaptcha = async (token: string) => {
+    const response = await fetch('/api/verify-recaptcha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error('reCAPTCHA verification failed');
+    }
+  };
+
+  const sendOtp = async () => {
+    if (!email) {
+      setError('Email is required');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const token = await executeRecaptcha();
+      await verifyRecaptcha(token);
+
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: authMode === 'signup' ? 'signup' : 'login' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      setOtpSent(true);
+      setOtpResendCooldown(60);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +117,77 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      const token = await executeRecaptcha();
+      await verifyRecaptcha(token);
+
+      if (authMode === 'email-otp') {
+        // Verify OTP first
+        const otpResponse = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp, purpose: 'login' }),
+        });
+
+        const otpData = await otpResponse.json();
+
+        if (!otpResponse.ok) {
+          throw new Error(otpData.error || 'Invalid OTP');
+        }
+
+        // After OTP verification, sign in with email/password
+        await signInWithEmailAndPassword(auth, email, password);
+      } else if (authMode === 'signup') {
+        // For signup, verify OTP first
+        const otpResponse = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp, purpose: 'signup' }),
+        });
+
+        const otpData = await otpResponse.json();
+
+        if (!otpResponse.ok) {
+          throw new Error(otpData.error || 'Invalid OTP');
+        }
+
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+
       onClose();
+      resetForm();
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const token = await executeRecaptcha();
+      await verifyRecaptcha(token);
+
+      const response = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reset email');
+      }
+
+      setError('');
+      alert('Password reset email sent. Please check your inbox.');
+      setAuthMode('login');
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
@@ -48,12 +202,29 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
     try {
       await signInWithPopup(auth, googleProvider);
       onClose();
+      resetForm();
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setOtp('');
+    setError('');
+    setOtpSent(false);
+    setOtpResendCooldown(0);
+  };
+
+  const switchAuthMode = (mode: AuthMode) => {
+    setAuthMode(mode);
+    resetForm();
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-zinc-950/85 backdrop-blur-md flex items-center justify-center p-4">
@@ -78,51 +249,129 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
           </div>
         ) : (
           <div className="space-y-5">
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
-                {isSignUp ? <UserPlus className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
-                {isSignUp ? 'Create account' : 'Sign in'}
-              </div>
-              <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">
-                {isSignUp ? 'Start saving your builds.' : 'Continue your robotics workspace.'}
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Save project history, revise generated builds, and keep your firmware, wiring, and test plans together.
-              </p>
-            </div>
+            {authMode === 'forgot-password' ? (
+              <>
+                <div>
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
+                    <Lock className="h-4 w-4" /> Reset Password
+                  </div>
+                  <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">Forgot your password?</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
+                </div>
 
-            {error && <p className="text-xs text-red-200 bg-red-950/30 p-3 rounded-lg border border-red-900/60">{error}</p>}
+                {error && <p className="text-xs text-red-200 bg-red-950/30 p-3 rounded-lg border border-red-900/60">{error}</p>}
 
-            <button type="button" disabled={loading} onClick={handleGoogleSignIn} className="w-full h-11 bg-zinc-950 border border-zinc-800 hover:border-teal-700 text-zinc-200 font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2.5 transition disabled:opacity-50">
-              <Globe className="h-4 w-4 text-teal-300" /> Continue with Google
-            </button>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Email</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
+                  </div>
+                  <button type="submit" disabled={loading} className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg transition disabled:opacity-50">
+                    {loading ? 'Please wait...' : 'Send Reset Link'}
+                  </button>
+                </form>
 
-            <div className="flex items-center text-zinc-700 text-[10px] font-bold tracking-widest uppercase">
-              <div className="flex-1 border-t border-zinc-800" />
-              <span className="px-3">or</span>
-              <div className="flex-1 border-t border-zinc-800" />
-            </div>
+                <p className="text-xs text-center text-zinc-500 pt-1">
+                  Remember your password?{' '}
+                  <button type="button" onClick={() => switchAuthMode('login')} className="text-teal-300 underline hover:text-teal-200 transition">
+                    Sign in
+                  </button>
+                </p>
+              </>
+            ) : (
+              <>
+                <div>
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-300 border border-teal-700/60 bg-teal-950/40 px-3 py-1.5 rounded-lg">
+                    {authMode === 'signup' ? <UserPlus className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+                    {authMode === 'signup' ? 'Create account' : 'Sign in'}
+                  </div>
+                  <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">
+                    {authMode === 'signup' ? 'Start saving your builds.' : 'Continue your robotics workspace.'}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                    Save project history, revise generated builds, and keep your firmware, wiring, and test plans together.
+                  </p>
+                </div>
 
-            <form onSubmit={handleAuth} className="space-y-4">
-              <div>
-                <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Email</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
-              </div>
-              <div>
-                <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
-              </div>
-              <button type="submit" disabled={loading} className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg transition disabled:opacity-50">
-                {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-              </button>
-            </form>
+                {error && <p className="text-xs text-red-200 bg-red-950/30 p-3 rounded-lg border border-red-900/60">{error}</p>}
 
-            <p className="text-xs text-center text-zinc-500 pt-1">
-              {isSignUp ? 'Already have an account?' : 'New to CircuitAI?'}{' '}
-              <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-teal-300 underline hover:text-teal-200 transition">
-                {isSignUp ? 'Sign in' : 'Create one'}
-              </button>
-            </p>
+                <button type="button" disabled={loading} onClick={handleGoogleSignIn} className="w-full h-11 bg-zinc-950 border border-zinc-800 hover:border-teal-700 text-zinc-200 font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2.5 transition disabled:opacity-50">
+                  <Globe className="h-4 w-4 text-teal-300" /> Continue with Google
+                </button>
+
+                <div className="flex items-center text-zinc-700 text-[10px] font-bold tracking-widest uppercase">
+                  <div className="flex-1 border-t border-zinc-800" />
+                  <span className="px-3">or</span>
+                  <div className="flex-1 border-t border-zinc-800" />
+                </div>
+
+                <form onSubmit={handleAuth} className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Email</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Password</label>
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
+                  </div>
+
+                  {(authMode === 'signup' || authMode === 'email-otp') && (
+                    <div>
+                      <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">OTP</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required className="flex-1 h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" placeholder="Enter 6-digit OTP" />
+                        <button type="button" onClick={sendOtp} disabled={loading || otpResendCooldown > 0} className="h-11 px-4 bg-zinc-950 border border-zinc-800 hover:border-teal-700 text-zinc-200 font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 whitespace-nowrap">
+                          {otpResendCooldown > 0 ? `${otpResendCooldown}s` : otpSent ? <RefreshCw className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                          {otpResendCooldown > 0 ? 'Resend' : otpSent ? 'Resend' : 'Send OTP'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <button type="submit" disabled={loading} className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg transition disabled:opacity-50">
+                    {loading ? 'Please wait...' : authMode === 'signup' ? 'Create Account' : 'Sign In'}
+                  </button>
+                </form>
+
+                <div className="flex flex-col gap-2 text-xs text-center text-zinc-500 pt-1">
+                  {authMode === 'login' && (
+                    <>
+                      <button type="button" onClick={() => switchAuthMode('email-otp')} className="text-teal-300 underline hover:text-teal-200 transition">
+                        Sign in with OTP
+                      </button>
+                      <button type="button" onClick={() => switchAuthMode('forgot-password')} className="text-teal-300 underline hover:text-teal-200 transition">
+                        Forgot password?
+                      </button>
+                      New to CircuitAI?{' '}
+                      <button type="button" onClick={() => switchAuthMode('signup')} className="text-teal-300 underline hover:text-teal-200 transition">
+                        Create one
+                      </button>
+                    </>
+                  )}
+                  {authMode === 'signup' && (
+                    <>
+                      Already have an account?{' '}
+                      <button type="button" onClick={() => switchAuthMode('login')} className="text-teal-300 underline hover:text-teal-200 transition">
+                        Sign in
+                      </button>
+                    </>
+                  )}
+                  {authMode === 'email-otp' && (
+                    <>
+                      <button type="button" onClick={() => switchAuthMode('login')} className="text-teal-300 underline hover:text-teal-200 transition">
+                        Sign in with password
+                      </button>
+                      New to CircuitAI?{' '}
+                      <button type="button" onClick={() => switchAuthMode('signup')} className="text-teal-300 underline hover:text-teal-200 transition">
+                        Create one
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
