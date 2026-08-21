@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { auth, googleProvider } from '@/lib/firebase';
 import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
-import { Globe, LogIn, LogOut, UserPlus, X, Lock, Mail, RefreshCw } from 'lucide-react';
+import { Globe, LogIn, LogOut, UserPlus, X, Lock } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,19 +19,8 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpResendCooldown, setOtpResendCooldown] = useState(0);
-
-  useEffect(() => {
-    if (otpResendCooldown > 0) {
-      const timer = setTimeout(() => setOtpResendCooldown(otpResendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [otpResendCooldown]);
 
   const loadRecaptcha = () => {
     if (typeof window !== 'undefined' && !window.grecaptcha) {
@@ -77,43 +66,6 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
     }
   };
 
-  const sendOtp = async () => {
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const token = await executeRecaptcha();
-      await verifyRecaptcha(token);
-
-      const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
-          purpose: authMode === 'signup' ? 'signup' : authMode === 'forgot-password' ? 'forgot-password' : 'login' 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send OTP');
-      }
-
-      setOtpSent(true);
-      setOtpResendCooldown(60);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -123,20 +75,6 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       const token = await executeRecaptcha();
       await verifyRecaptcha(token);
 
-      // Verify OTP first for both signup and login
-      const otpResponse = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, purpose: authMode === 'signup' ? 'signup' : 'login' }),
-      });
-
-      const otpData = await otpResponse.json();
-
-      if (!otpResponse.ok) {
-        throw new Error(otpData.error || 'Invalid OTP');
-      }
-
-      // After OTP verification, proceed with auth
       if (authMode === 'signup') {
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
@@ -161,24 +99,10 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       const token = await executeRecaptcha();
       await verifyRecaptcha(token);
 
-      // Verify OTP first
-      const otpResponse = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, purpose: 'forgot-password' }),
-      });
-
-      const otpData = await otpResponse.json();
-
-      if (!otpResponse.ok) {
-        throw new Error(otpData.error || 'Invalid OTP');
-      }
-
-      // After OTP verification, send password reset email
       const response = await fetch('/api/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
@@ -215,10 +139,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
   const resetForm = () => {
     setEmail('');
     setPassword('');
-    setOtp('');
     setError('');
-    setOtpSent(false);
-    setOtpResendCooldown(0);
   };
 
   const switchAuthMode = (mode: AuthMode) => {
@@ -259,7 +180,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                   </div>
                   <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">Forgot your password?</h2>
                   <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                    Enter your email address, get an OTP, and we'll send you a link to reset your password.
+                    Enter your email address and we'll send you a link to reset your password.
                   </p>
                 </div>
 
@@ -269,16 +190,6 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                   <div>
                     <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Email</label>
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">OTP</label>
-                    <div className="flex gap-2">
-                      <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required className="flex-1 h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" placeholder="Enter 6-digit OTP" />
-                      <button type="button" onClick={sendOtp} disabled={loading || otpResendCooldown > 0} className="h-11 px-4 bg-zinc-950 border border-zinc-800 hover:border-teal-700 text-zinc-200 font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 whitespace-nowrap">
-                        {otpResendCooldown > 0 ? `${otpResendCooldown}s` : otpSent ? <RefreshCw className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
-                        {otpResendCooldown > 0 ? 'Resend' : otpSent ? 'Resend' : 'Send OTP'}
-                      </button>
-                    </div>
                   </div>
                   <button type="submit" disabled={loading} className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg transition disabled:opacity-50">
                     {loading ? 'Please wait...' : 'Send Reset Link'}
@@ -328,19 +239,6 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                     <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">Password</label>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" />
                   </div>
-
-                  {(authMode === 'signup' || authMode === 'login') && (
-                    <div>
-                      <label className="block text-[11px] uppercase text-zinc-500 font-bold mb-1.5">OTP</label>
-                      <div className="flex gap-2">
-                        <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required className="flex-1 h-11 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm focus:outline-none focus:border-teal-500 text-zinc-100" placeholder="Enter 6-digit OTP" />
-                        <button type="button" onClick={sendOtp} disabled={loading || otpResendCooldown > 0} className="h-11 px-4 bg-zinc-950 border border-zinc-800 hover:border-teal-700 text-zinc-200 font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 whitespace-nowrap">
-                          {otpResendCooldown > 0 ? `${otpResendCooldown}s` : otpSent ? <RefreshCw className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
-                          {otpResendCooldown > 0 ? 'Resend' : otpSent ? 'Resend' : 'Send OTP'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   <button type="submit" disabled={loading} className="w-full h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg transition disabled:opacity-50">
                     {loading ? 'Please wait...' : authMode === 'signup' ? 'Create Account' : 'Sign In'}
