@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { checkEmailVerification } from '@/lib/auth-helpers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +15,12 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
+    }
+
+    // Security: Check email verification
+    const verificationError = await checkEmailVerification();
+    if (verificationError) {
+      return verificationError;
     }
 
     if (!user.email) {

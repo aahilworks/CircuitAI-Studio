@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { auth, googleProvider } from '@/lib/firebase';
-import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
-import { Globe, LogIn, LogOut, UserPlus, X, Lock } from 'lucide-react';
+import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, sendEmailVerification } from 'firebase/auth';
+import { Globe, LogIn, LogOut, UserPlus, X, Lock, Mail } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -76,7 +76,10 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       await verifyRecaptcha(token);
 
       if (authMode === 'signup') {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Send email verification
+        await sendEmailVerification(userCredential.user);
+        alert('Account created! Please check your email to verify your account.');
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -165,6 +168,26 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
               <h2 className="mt-4 text-2xl font-black tracking-tight text-zinc-50">Your workspace is connected.</h2>
               <p className="mt-2 text-sm text-zinc-400">{user.email}</p>
             </div>
+
+            {!user.emailVerified && (
+              <div className="bg-amber-950/30 border border-amber-700/60 rounded-lg p-3">
+                <p className="text-xs text-amber-200 mb-2">Your email is not verified. Please verify your email to access all features.</p>
+                <button 
+                  type="button" 
+                  onClick={async () => {
+                    try {
+                      await fetch('/api/resend-verification', { method: 'POST' });
+                      alert('Verification email sent! Please check your inbox.');
+                    } catch (err) {
+                      alert('Failed to send verification email. Please try again.');
+                    }
+                  }}
+                  className="w-full h-9 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg flex items-center justify-center gap-2 transition"
+                >
+                  <Mail className="h-3.5 w-3.5" /> Resend Verification Email
+                </button>
+              </div>
+            )}
 
             <button type="button" onClick={() => { void signOut(auth); onClose(); }} className="w-full h-11 bg-red-950/40 border border-red-900/70 text-red-200 font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-red-900/30 transition">
               <LogOut className="h-4 w-4" /> Sign Out

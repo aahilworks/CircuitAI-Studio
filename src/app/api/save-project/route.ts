@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { ensureProAccessSynced } from '@/lib/server/subscription';
 import { requireAuthUser } from '@/lib/server/auth';
+import { checkEmailVerification } from '@/lib/auth-helpers';
 
 interface SaveProjectBody {
   userId?: string;
@@ -23,6 +24,12 @@ export async function POST(req: Request) {
         { error: "Unauthorized. Please sign in." }, 
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Security: Check email verification
+    const verificationError = await checkEmailVerification();
+    if (verificationError) {
+      return verificationError;
     }
 
     const { userId, sessionId, title, board, projectData, messages } = (await req.json()) as SaveProjectBody;
