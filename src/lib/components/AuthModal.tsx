@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { auth, googleProvider } from '@/lib/firebase';
 import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, sendEmailVerification } from 'firebase/auth';
-import { Globe, LogIn, LogOut, UserPlus, X, Lock, Mail } from 'lucide-react';
+import { Globe, LogIn, LogOut, UserPlus, X, Lock, Mail, AlertTriangle } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -81,7 +81,16 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
         await sendEmailVerification(userCredential.user);
         alert('Account created! Please check your email to verify your account.');
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Reload user to get latest verification status
+        await userCredential.user.reload();
+        
+        if (!userCredential.user.emailVerified) {
+          setError('Please verify your email before signing in. Check your inbox for the verification link.');
+          await signOut(auth);
+          return;
+        }
       }
 
       onClose();
@@ -240,6 +249,13 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                     Save project history, revise generated builds, and keep your firmware, wiring, and test plans together.
                   </p>
                 </div>
+
+                {authMode === 'login' && (
+                  <div className="bg-amber-950/30 border border-amber-700/60 rounded-lg p-3 flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-300 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-amber-200">Email verification is required to sign in. Please verify your email before logging in.</p>
+                  </div>
+                )}
 
                 {error && <p className="text-xs text-red-200 bg-red-950/30 p-3 rounded-lg border border-red-900/60">{error}</p>}
 
