@@ -86,8 +86,11 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
         // Reload user to get latest verification status
         await userCredential.user.reload();
         
+        // Send verification email on every login attempt
+        await sendEmailVerification(userCredential.user);
+        
         if (!userCredential.user.emailVerified) {
-          setError('Please verify your email before signing in. Check your inbox for the verification link.');
+          setError('Please verify your email before signing in. A new verification email has been sent to your inbox.');
           await signOut(auth);
           return;
         }
