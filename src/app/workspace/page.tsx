@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { collection, getDocs, query, orderBy, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import AuthModal from '@/lib/components/AuthModal';
 import { initiateProSubscription } from '@/lib/razorpayCheckout';
@@ -512,12 +512,26 @@ export default function Home() {
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       setAuthReady(true);
       unsubscribeUserDoc?.();
 
       if (!user) {
+        setHistorySessions([]);
+        resetWorkspace();
+        setIsProUser(false);
+        return;
+      }
+
+      // Reload user to get latest verification status
+      await user.reload();
+
+      // Check email verification for non-Google users
+      if (!user.emailVerified) {
+        // Sign out user if email is not verified
+        await signOut(auth);
+        alert('Please verify your email before accessing the workspace. Check your inbox for the verification link.');
         setHistorySessions([]);
         resetWorkspace();
         setIsProUser(false);
@@ -546,7 +560,7 @@ export default function Home() {
       unsubscribeAuth();
       unsubscribeUserDoc?.();
     };
-  }, [fetchSidebarHistory, resetWorkspace]);
+  }, [resetWorkspace, fetchSidebarHistory]);
 
   const saveProjectToFirestore = async (userId: string, sessionId: string, project: ProjectData, messages: ChatMessage[] = []) => {
     try {
