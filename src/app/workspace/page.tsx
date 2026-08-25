@@ -527,7 +527,7 @@ export default function Home() {
       // Reload user to get latest verification status
       await user.reload();
 
-      // Check email verification for non-Google users
+      // Check email verification for all users (including Google)
       if (!user.emailVerified) {
         // Sign out user if email is not verified
         await signOut(auth);

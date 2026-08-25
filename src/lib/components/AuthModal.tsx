@@ -152,7 +152,24 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
     setLoading(true);
 
     try {
-      await signInWithPopup(auth, googleProvider);
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      
+      // Reload user to get latest verification status
+      await userCredential.user.reload();
+      
+      // Check email verification for Google users too
+      if (!userCredential.user.emailVerified) {
+        try {
+          await sendEmailVerification(userCredential.user);
+          console.log('Verification email sent for Google login');
+        } catch (emailError: any) {
+          console.error('Failed to send verification email for Google login:', emailError);
+        }
+        setError('Please verify your email before signing in. A verification email has been sent to your inbox.');
+        await signOut(auth);
+        return;
+      }
+      
       onClose();
       resetForm();
     } catch (err: unknown) {
@@ -267,7 +284,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                 {authMode === 'login' && (
                   <div className="bg-amber-950/30 border border-amber-700/60 rounded-lg p-3 flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-amber-300 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-amber-200">Email verification is required to sign in. Please verify your email before logging in.</p>
+                    <p className="text-xs text-amber-200">Email verification is required to sign in. A verification email will be sent on every login attempt.</p>
                   </div>
                 )}
 
