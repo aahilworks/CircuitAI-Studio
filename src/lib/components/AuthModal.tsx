@@ -78,7 +78,13 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       if (authMode === 'signup') {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         // Send email verification
-        await sendEmailVerification(userCredential.user);
+        try {
+          await sendEmailVerification(userCredential.user);
+          console.log('Verification email sent for signup');
+        } catch (emailError: any) {
+          console.error('Failed to send verification email for signup:', emailError);
+          // Continue anyway, user can request resend later
+        }
         alert('Account created! Please check your email to verify your account.');
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -87,7 +93,12 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
         await userCredential.user.reload();
         
         // Send verification email on every login attempt
-        await sendEmailVerification(userCredential.user);
+        try {
+          await sendEmailVerification(userCredential.user);
+          console.log('Verification email sent for login');
+        } catch (emailError: any) {
+          console.error('Failed to send verification email for login:', emailError);
+        }
         
         if (!userCredential.user.emailVerified) {
           setError('Please verify your email before signing in. A new verification email has been sent to your inbox.');
