@@ -26,11 +26,23 @@ const terms = [
   },
   {
     title: 'Pro Subscription Billing',
-    body: 'CircuitAI Pro is a monthly subscription billed through Razorpay. New subscribers get a 2-day free trial, then ₹999/month for up to 12 billing cycles unless cancelled. Failed payments or cancellation revoke Pro access immediately. Subscription status is managed server-side in Firebase.',
+    body: 'CircuitAI Pro offers two billing options: Monthly at ₹699/month or Yearly at ₹5,999/year (save 14%). New monthly subscribers get a 2-day free trial, then billed monthly for up to 12 billing cycles unless cancelled. Yearly subscribers pay one-time for 1 year access. Failed payments or cancellation revoke Pro access immediately. Subscription status is managed server-side in Firebase.',
   },
   {
     title: 'Promotional Communications',
     body: 'By signing up for CircuitAI, you automatically agree to receive promotional emails about new features, updates, and offers. You can unsubscribe from these emails at any time by clicking the unsubscribe link in our emails or contacting us.',
+  },
+  {
+    title: 'Account Termination',
+    body: 'We reserve the right to suspend or terminate accounts that violate these terms, engage in fraudulent activity, abuse the service, or violate safety guidelines. Pro access will be immediately revoked upon termination.',
+  },
+  {
+    title: 'Data Privacy',
+    body: 'Your project data, prompts, and account information are stored securely in Firebase. We do not sell your personal data to third parties. For detailed privacy practices, please refer to our Privacy Policy.',
+  },
+  {
+    title: 'Service Availability',
+    body: 'CircuitAI relies on third-party AI services (Gemini APIs) which may experience downtime, rate limits, or service interruptions. We do not guarantee 100% uptime or immediate response times.',
   },
   {
     title: 'No Warranty',
@@ -62,7 +74,7 @@ export default function TermsPage() {
           <p className="mt-3 text-sm md:text-base text-zinc-400 max-w-2xl leading-relaxed">
             Clear rules for using CircuitAI to plan, build, test, and improve robotics projects.
           </p>
-          <p className="mt-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Last updated: July 2026</p>
+          <p className="mt-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Last updated: August 2026</p>
         </header>
 
         <section className="mb-4 bg-amber-950/20 border border-amber-900/60 p-5 rounded-lg">
