@@ -29,6 +29,10 @@ const terms = [
     body: 'CircuitAI Pro is a monthly subscription billed through Razorpay. New subscribers get a 2-day free trial, then ₹999/month for up to 12 billing cycles unless cancelled. Failed payments or cancellation revoke Pro access immediately. Subscription status is managed server-side in Firebase.',
   },
   {
+    title: 'Promotional Communications',
+    body: 'By signing up for CircuitAI, you automatically agree to receive promotional emails about new features, updates, and offers. You can unsubscribe from these emails at any time by clicking the unsubscribe link in our emails or contacting us.',
+  },
+  {
     title: 'No Warranty',
     body: 'CircuitAI is provided as-is and as-available. We do not guarantee that AI-generated electronics guidance will be accurate, safe, complete, or suitable for a specific project.',
   },

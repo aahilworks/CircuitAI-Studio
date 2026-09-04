@@ -47,3 +47,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Promotional Email Templates
+promotional-email.html
