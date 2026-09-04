@@ -14,7 +14,7 @@ export default function EasterEggProvider({ children }: EasterEggProviderProps) 
   const [typedSequence, setTypedSequence] = useState<string>('');
 
   // Konami Code: ↑↑↓↓←→←→BA
-  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   const [konamiIndex, setKonamiIndex] = useState(0);
 
   // Founder sequence: 'aahil'
