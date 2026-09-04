@@ -661,7 +661,13 @@ export default function Home() {
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
-    
+
+    // Check for secret project easter egg
+    if (handleSecretProject(prompt)) {
+      setPrompt('');
+      return;
+    }
+
     // Add user message to chat history
     const userMessage: ChatMessage = {
       role: 'user',
@@ -946,6 +952,23 @@ ${data.secondary_code}
     window.open(`https://www.amazon.com/s?k=${encodeURIComponent(item)}+electronic+component`, '_blank');
   };
 
+  const handleLogoClick = () => {
+    // @ts-ignore - Accessing window handler for easter egg
+    if (typeof window !== 'undefined' && window.circuitaiHandlers?.logoClick) {
+      // @ts-ignore
+      window.circuitaiHandlers.logoClick();
+    }
+  };
+
+  const handleSecretProject = (input: string) => {
+    // @ts-ignore - Accessing window handler for easter egg
+    if (typeof window !== 'undefined' && window.circuitaiHandlers?.secretProject) {
+      // @ts-ignore
+      return window.circuitaiHandlers.secretProject(input);
+    }
+    return false;
+  };
+
   if (!authReady) {
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center font-sans">
@@ -962,8 +985,10 @@ ${data.secondary_code}
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-teal-500/30">
         <header className="h-16 border-b border-zinc-800 px-4 md:px-6 flex items-center justify-between bg-zinc-950 z-20 shrink-0">
           <div className="flex items-center gap-3">
-            <span className="font-black text-xs text-teal-300 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-md">CAI</span>
-            <h1 className="text-lg font-black tracking-wide">Circuit<span className="text-teal-300">AI</span></h1>
+            <Link href="/" className="flex items-center gap-3" onClick={handleLogoClick}>
+              <span className="font-black text-xs text-teal-300 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-md">CAI</span>
+              <h1 className="text-lg font-black tracking-wide">Circuit<span className="text-teal-300">AI</span></h1>
+            </Link>
             <nav className="hidden items-center gap-4 pl-3 text-xs font-bold text-zinc-500 md:flex">
               <Link href="/" className="hover:text-teal-300 transition">Home</Link>
               <Link href="/features" className="hover:text-teal-300 transition">Features</Link>
@@ -1051,7 +1076,7 @@ ${data.secondary_code}
           <button type="button" onClick={() => setIsMobileSidebarOpen(true)} className="p-1.5 rounded-lg border border-zinc-800 bg-zinc-900 md:hidden hover:text-teal-300 transition" aria-label="Open project history">
             <Menu className="h-4 w-4" />
           </button>
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3" onClick={handleLogoClick}>
             <span className="font-black text-xs text-teal-300 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-md">CAI</span>
             <h1 className="text-lg font-black tracking-wide">Circuit<span className="text-teal-300">AI</span></h1>
           </Link>

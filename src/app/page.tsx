@@ -33,6 +33,14 @@ export default function HomePage() {
     localStorage.setItem('circuitai-currency', newCurrency);
   };
 
+  const handleLogoClick = () => {
+    // @ts-ignore - Accessing window handler for easter egg
+    if (typeof window !== 'undefined' && window.circuitaiHandlers?.logoClick) {
+      // @ts-ignore
+      window.circuitaiHandlers.logoClick();
+    }
+  };
+
   useEffect(() => {
     const savedCurrency = localStorage.getItem('circuitai-currency') as Currency;
     if (savedCurrency) {
@@ -44,7 +52,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-teal-500/30">
       <header className="border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 md:px-8">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3" onClick={handleLogoClick}>
             <span className="font-black text-xs text-teal-300 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-md">CAI</span>
             <span className="text-lg font-black tracking-wide">Circuit<span className="text-teal-300">AI</span></span>
           </Link>
