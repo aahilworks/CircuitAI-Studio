@@ -37,12 +37,11 @@ export default function CancellationRefundPage() {
               Refund Policy
             </h2>
             <div className="space-y-3 text-sm text-zinc-300">
-              <p>We want you to be satisfied with CircuitAI Pro. Here's our refund policy:</p>
+              <p>All subscription payments are non-refundable. This applies to both monthly and yearly plans.</p>
               <ul className="list-disc list-inside space-y-2 ml-2">
-                <li><strong>7-day refund window:</strong> Request a refund within 7 days of purchase if you're not satisfied</li>
-                <li><strong>Monthly subscriptions:</strong> Refund for the current billing period only</li>
-                <li><strong>Yearly one-time payments:</strong> Pro-rated refund based on remaining time</li>
-                <li><strong>No refunds after 7 days:</strong> Except in cases of technical issues or service failures</li>
+                <li><strong>Monthly subscriptions:</strong> No refunds on monthly payments</li>
+                <li><strong>Yearly one-time payments:</strong> No refunds on yearly payments</li>
+                <li><strong>Verification charges:</strong> Small charges used for payment validation will be refunded after successful verification</li>
               </ul>
             </div>
           </div>
@@ -61,9 +60,9 @@ export default function CancellationRefundPage() {
           </div>
 
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-6">
-            <h2 className="text-lg font-black text-zinc-100 mb-4">Exceptions</h2>
+            <h2 className="text-lg font-black text-zinc-100 mb-4">Refund Exceptions</h2>
             <div className="space-y-3 text-sm text-zinc-300">
-              <p>We may issue refunds beyond the 7-day window in cases of:</p>
+              <p>We may issue refunds in exceptional cases:</p>
               <ul className="list-disc list-inside space-y-2 ml-2">
                 <li>Technical issues preventing use of the service</li>
                 <li>Billing errors or unauthorized charges</li>
