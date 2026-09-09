@@ -26,7 +26,7 @@ const terms = [
   },
   {
     title: 'Pro Subscription Billing',
-    body: 'CircuitAI Pro offers two billing options: Monthly at ₹699/month or Yearly at ₹5,999/year (save 14%). New monthly subscribers get a 2-day free trial, then billed monthly for up to 12 billing cycles unless cancelled. Yearly subscribers pay one-time for 1 year access. Failed payments or cancellation revoke Pro access immediately. Subscription status is managed server-side in Firebase.',
+    body: 'CircuitAI Pro offers two billing options: Monthly at ₹699/month or Yearly at ₹5,999/year (save 14%). Monthly subscribers are billed monthly for up to 12 billing cycles unless cancelled. Yearly subscribers pay one-time for 1 year access. Failed payments or cancellation revoke Pro access immediately. Subscription status is managed server-side in Firebase.',
   },
   {
     title: 'Promotional Communications',

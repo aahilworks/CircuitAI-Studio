@@ -39,9 +39,7 @@ export async function POST(request: Request) {
 
     // Use Razorpay for international payments
     const razorpay = getRazorpayClient();
-    const trialDays = getTrialDays();
-    const startAt =
-      trialDays > 0 ? Math.floor(Date.now() / 1000) + trialDays * 24 * 60 * 60 : undefined;
+    const startAt = undefined; // No trial period
 
     const planId = getRazorpayPlanId(currency);
     const product = `circuitai_pro_monthly`;

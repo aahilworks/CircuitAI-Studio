@@ -125,7 +125,7 @@ export async function initiateProSubscription({
 
           const verifyData = await verifyRes.json();
           if (verifyRes.ok && verifyData.success) {
-            notifySuccess(isYearly ? 'Payment successful. Your CircuitAI Pro is now active for 1 year!' : 'Subscription started. Your CircuitAI Pro trial is active.');
+            notifySuccess(isYearly ? 'Payment successful. Your CircuitAI Pro is now active for 1 year!' : 'Subscription started. Your CircuitAI Pro is now active.');
             return;
           }
 
