@@ -277,17 +277,6 @@ export default function PricingPage() {
 
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-5 lg:col-span-3">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="text-sm font-black text-zinc-100 flex items-center gap-2"><Lock className="h-4 w-4 text-teal-300" /> Firebase Pro Status</h2>
-                <p className="mt-2 text-sm text-zinc-500">
-                  {authReady
-                    ? currentUser
-                      ? `Signed in as ${currentUser.email || currentUser.uid}. Firebase isPro = ${isProUser ? 'true' : 'false'}.`
-                      : 'Sign in to check your Firebase Pro status.'
-                    : 'Checking authentication status...'}
-                </p>
-              </div>
-
               <div className={`rounded-lg border px-4 py-3 text-sm font-black ${isProUser ? 'border-emerald-800 bg-emerald-950/30 text-emerald-300' : 'border-zinc-800 bg-zinc-950 text-zinc-400'}`}>
                 {isProUser ? 'Pro Active' : 'Pro Not Active'}
               </div>
