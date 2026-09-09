@@ -108,7 +108,7 @@ const CONVERSION_RATES: Record<Currency, number> = {
   GBP: 0.0095, // 1 INR = 0.0095 GBP
   EUR: 0.011, // 1 INR = 0.011 EUR
   CAD: 0.016, // 1 INR = 0.016 CAD
-  AUD: 0.018, // 1 INR = 0.018 AUD
+  AUD: 0.0186, // 1 INR = 0.0186 AUD (₹699 = A$13)
   DKK: 0.082, // 1 INR = 0.082 DKK
   AED: 0.044, // 1 INR = 0.044 AED
   SGD: 0.016, // 1 INR = 0.016 SGD
