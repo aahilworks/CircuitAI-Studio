@@ -47,10 +47,13 @@ const getPrice = (billingCycle: 'monthly' | 'yearly') => {
 export default function PricingPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [currency, setCurrency] = useState<'INR' | 'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD' | 'DKK' | 'AED' | 'SGD' | 'CNY' | 'CHF' | 'SEK'>('INR');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [isProUser, setIsProUser] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProUser, setIsProUser] = useState(false);
 
   const handleCurrencyChange = (newCurrency: Currency) => {
     setCurrency(newCurrency);
@@ -74,16 +77,63 @@ export default function PricingPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let unsubscribeUserDoc: (() => void) | undefined;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setAuthReady(true);
+      unsubscribeUserDoc?.();
+
+      if (!user) {
+        setIsProUser(false);
+        return;
+      }
+
+      unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
+        if (snapshot.exists()) {
+          setIsProUser(hasActiveProAccess(snapshot.data()));
+        } else {
+          // User document doesn't exist, create it
+          setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            isPro: false,
+          }, { merge: true });
+          setIsProUser(false);
+        }
+      });
+
+      void user.getIdToken().then((token) =>
+        fetch('/api/subscription-status', {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => undefined),
+      );
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeUserDoc?.();
+    };
+  }, []);
+
   const initiateCheckout = async () => {
-    setIsProcessingPayment(true);
-    try {
-      // Redirect to workspace for authentication and checkout
-      window.location.href = '/workspace';
-    } catch (error) {
-      console.error('Checkout error:', error);
-    } finally {
-      setIsProcessingPayment(false);
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
     }
+
+    setIsProcessingPayment(true);
+
+    await initiateProSubscription({
+      currentUser,
+      billingCycle,
+      currency,
+      onSuccess: (message) => alert(message),
+      onError: (message) => alert(message),
+    });
+
+    setIsProcessingPayment(false);
   };
 
   return (
@@ -209,9 +259,9 @@ export default function PricingPage() {
                 </div>
               </div>
 
-              <button type="button" onClick={initiateCheckout} disabled={isProcessingPayment} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+              <button type="button" onClick={initiateCheckout} disabled={isProcessingPayment || isProUser} className="h-11 px-5 bg-teal-600 hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
                 {isProcessingPayment ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                Subscribe Now
+                {isProUser ? 'Pro Active' : 'Subscribe Now'}
               </button>
             </div>
 
@@ -232,6 +282,12 @@ export default function PricingPage() {
               </div>
             </div>
 
+            {!currentUser && (
+              <button type="button" onClick={() => setIsAuthModalOpen(true)} className="mt-4 h-10 px-4 bg-zinc-950 border border-zinc-800 hover:border-teal-800 text-zinc-300 hover:text-teal-300 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2 transition">
+                <Sparkles className="h-4 w-4" /> Sign In To Check Status
+              </button>
+            )}
+
             <div className="mt-4 pt-4 border-t border-zinc-800">
               <p className="text-xs text-zinc-500">
                 Need help with refunds or billing? Contact us at{' '}
@@ -244,6 +300,7 @@ export default function PricingPage() {
         </div>
       </section>
 
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} user={currentUser} />
       </>
       )}
     </main>
