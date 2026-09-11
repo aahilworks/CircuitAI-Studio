@@ -5,6 +5,7 @@ import { getAuth } from 'firebase-admin/auth';
 export interface AuthenticatedUser {
   uid: string;
   email?: string;
+  emailVerified?: boolean;
 }
 
 export async function requireAuthUser(request: Request): Promise<AuthenticatedUser | null> {
@@ -20,7 +21,7 @@ export async function requireAuthUser(request: Request): Promise<AuthenticatedUs
 
   try {
     const decoded = await getAuth().verifyIdToken(token);
-    return { uid: decoded.uid, email: decoded.email };
+    return { uid: decoded.uid, email: decoded.email, emailVerified: decoded.email_verified };
   } catch {
     return null;
   }

@@ -926,6 +926,24 @@ ${data.secondary_code}
     }
   };
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (!data) {
+      window.localStorage.removeItem('circuitai-active-project');
+    } else {
+      window.localStorage.setItem(
+        'circuitai-active-project',
+        JSON.stringify({
+          activeTab,
+          projectData: data,
+        })
+      );
+    }
+
+    window.dispatchEvent(new Event('circuitai-active-project'));
+  }, [activeTab, data]);
+
   const askCircuitAI = async (questionOverride?: string) => {
     const questionToAsk = (questionOverride || tutorQuestion).trim();
     if (!questionToAsk) return;
@@ -949,6 +967,7 @@ ${data.secondary_code}
         },
         body: JSON.stringify({
           question: questionToAsk,
+          scope: data ? 'project' : 'general',
           activeTab,
           projectData: data,
         }),

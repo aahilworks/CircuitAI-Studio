@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     }
 
     // Security: Check email verification
-    const verificationError = await checkEmailVerification();
+    const verificationError = checkEmailVerification(authUser);
     if (verificationError) {
       return verificationError;
     }

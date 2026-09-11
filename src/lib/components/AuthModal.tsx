@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { auth, googleProvider } from '@/lib/firebase';
-import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, sendEmailVerification } from 'firebase/auth';
+import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
 import { Globe, LogIn, LogOut, UserPlus, X, Lock, Mail, AlertTriangle } from 'lucide-react';
 
 interface AuthModalProps {
@@ -92,15 +92,13 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
         // Reload user to get latest verification status
         await userCredential.user.reload();
         
-        // Send verification email on every login attempt
-        try {
-          await sendEmailVerification(userCredential.user);
-          console.log('Verification email sent for login');
-        } catch (emailError: any) {
-          console.error('Failed to send verification email for login:', emailError);
-        }
-        
         if (!userCredential.user.emailVerified) {
+          try {
+            await sendEmailVerification(userCredential.user);
+            console.log('Verification email sent for login');
+          } catch (emailError: unknown) {
+            console.error('Failed to send verification email for login:', emailError);
+          }
           setError('Please verify your email before signing in. A new verification email has been sent to your inbox.');
           await signOut(auth);
           return;
@@ -125,17 +123,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
       const token = await executeRecaptcha();
       await verifyRecaptcha(token);
 
-      const response = await fetch('/api/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send reset email');
-      }
+      await sendPasswordResetEmail(auth, email);
 
       setError('');
       alert('Password reset email sent. Please check your inbox.');
@@ -162,7 +150,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
         try {
           await sendEmailVerification(userCredential.user);
           console.log('Verification email sent for Google login');
-        } catch (emailError: any) {
+        } catch (emailError: unknown) {
           console.error('Failed to send verification email for Google login:', emailError);
         }
         setError('Please verify your email before signing in. A verification email has been sent to your inbox.');
@@ -216,7 +204,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                   type="button" 
                   onClick={async () => {
                     try {
-                      await fetch('/api/resend-verification', { method: 'POST' });
+                      await sendEmailVerification(user);
                       alert('Verification email sent! Please check your inbox.');
                     } catch (err) {
                       alert('Failed to send verification email. Please try again.');
@@ -284,7 +272,7 @@ export default function AuthModal({ isOpen, onClose, user }: AuthModalProps) {
                 {authMode === 'login' && (
                   <div className="bg-amber-950/30 border border-amber-700/60 rounded-lg p-3 flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-amber-300 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-amber-200">Email verification is required to sign in. A verification email will be sent on every login attempt.</p>
+                <p className="text-xs text-amber-200">Email verification is required to sign in. If your email is still unverified, we can send a fresh verification link.</p>
                   </div>
                 )}
 

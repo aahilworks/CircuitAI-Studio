@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
 import AuthModal from '@/lib/components/AuthModal';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, collection, query, where, getDocs, orderBy, limit, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, getDocs, orderBy, limit, setDoc } from 'firebase/firestore';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import { 
   ArrowRight, 
@@ -40,7 +40,7 @@ interface ProjectData {
   id: string;
   title: string;
   target_board?: string;
-  createdAt: string;
+  lastUpdated: string;
 }
 
 export default function DashboardPage() {
@@ -108,8 +108,8 @@ export default function DashboardPage() {
       const loadProjectData = async () => {
         try {
           const projectsQuery = query(
-            collection(db, 'users', user.uid, 'projects'),
-            orderBy('createdAt', 'desc'),
+            collection(db, 'users', user.uid, 'chatSessions'),
+            orderBy('lastUpdated', 'desc'),
             limit(10)
           );
           const snapshot = await getDocs(projectsQuery);
@@ -119,7 +119,7 @@ export default function DashboardPage() {
             id: doc.id,
             title: doc.data().title || 'Untitled Project',
             target_board: doc.data().target_board,
-            createdAt: doc.data().createdAt,
+            lastUpdated: doc.data().lastUpdated,
           })) as ProjectData[];
           setRecentProjects(projects);
         } catch (error) {
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] text-zinc-500">{project.target_board || 'Unknown board'}</span>
                         <span className="text-[10px] text-zinc-600">•</span>
-                        <span className="text-[10px] text-zinc-500">{formatDate(project.createdAt)}</span>
+                        <span className="text-[10px] text-zinc-500">{formatDate(project.lastUpdated)}</span>
                       </div>
                     </Link>
                   ))}

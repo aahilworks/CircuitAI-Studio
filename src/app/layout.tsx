@@ -3,6 +3,7 @@ import { Geist, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { CurrencyProvider } from "@/lib/hooks/useCurrency";
 import EasterEggProvider from "@/lib/components/EasterEggProvider";
+import CircuitAIAssistant from "@/lib/components/CircuitAIAssistant";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -143,7 +144,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <EasterEggProvider>
-          <CurrencyProvider>{children}</CurrencyProvider>
+          <CurrencyProvider>
+            {children}
+            <CircuitAIAssistant />
+          </CurrencyProvider>
         </EasterEggProvider>
       </body>
     </html>

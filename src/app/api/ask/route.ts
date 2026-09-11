@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { requireAuthUser } from '@/lib/server/auth';
+import { adminDb } from '@/lib/firebaseAdmin';
+import { ensureProAccessSynced } from '@/lib/server/subscription';
 
 interface AskRequestBody {
   question?: string;
   activeTab?: string;
   projectData?: unknown;
+  scope?: 'general' | 'project';
 }
 
 interface GeminiErrorPayload {
@@ -56,8 +59,8 @@ function compactProjectContext(projectData: unknown): string {
 const systemInstructionText = `You are CircuitAI Tutor, a concise robotics teacher inside the CircuitAI app.
 
 Answer rules:
-1. If project context is available, answer using that project first: code, wiring, parts, upload guide, safety, testing, simulation, quiz, teacher mode, and presentation material.
-2. If no project is open, answer general CircuitAI usage questions: workspace, free limits, Pro features, teacher mode, sharing, upload help, safety, and project generation.
+1. If project mode is active, answer using that project first: code, wiring, parts, upload guide, safety, testing, simulation, quiz, teacher mode, and presentation material.
+2. If general mode is active, answer general CircuitAI usage questions: workspace, free limits, Pro features, teacher mode, sharing, upload help, safety, and project generation.
 3. Be practical for robotics students. Give steps, checks, and simple explanations.
 4. For electronics safety, warn about batteries, motors, heat, shorts, current draw, polarity, and adult supervision when relevant.
 5. Do not invent subscription status or account details. Tell the user to check the dashboard when account-specific data is needed.
@@ -71,10 +74,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized. Please sign in.' }, { status: 401 });
     }
 
-    const { question, activeTab, projectData } = (await request.json()) as AskRequestBody;
+    const { question, activeTab, projectData, scope = 'general' } = (await request.json()) as AskRequestBody;
 
     if (!question?.trim()) {
       return NextResponse.json({ error: 'Ask CircuitAI needs a question.' }, { status: 400 });
+    }
+
+    const wantsProjectContext = scope === 'project' && !!projectData && typeof projectData === 'object';
+
+    if (wantsProjectContext) {
+      const userRef = adminDb.collection('users').doc(authUser.uid);
+      const userDoc = await userRef.get();
+      const isPro = await ensureProAccessSynced(authUser.uid, userDoc.data());
+
+      if (!isPro) {
+        return NextResponse.json(
+          {
+            error: 'PROJECT_TUTOR_REQUIRES_PRO',
+            message: 'Project-aware CircuitAI Tutor is a Pro feature. You can still ask general CircuitAI questions on the Free plan.',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const keyPool = [
@@ -86,9 +107,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Backend AI key is not configured.' }, { status: 500 });
     }
 
-    const prompt = `Current workspace tab: ${activeTab || 'unknown'}
+    const prompt = `Tutor mode: ${wantsProjectContext ? 'project' : 'general'}
+Current workspace tab: ${activeTab || 'unknown'}
 Current project context:
-${compactProjectContext(projectData)}
+${wantsProjectContext ? compactProjectContext(projectData) : 'General CircuitAI help only. Do not answer from a specific project.'}
 
 Student question:
 ${question.trim()}`;
