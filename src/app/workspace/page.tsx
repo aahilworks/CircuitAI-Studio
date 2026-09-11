@@ -47,6 +47,7 @@ import {
   ShoppingCart,
   Sparkles,
   Store,
+  Send,
   UploadCloud,
   Wrench,
   X,
@@ -147,6 +148,11 @@ interface GenerateErrorPayload {
   message?: string;
 }
 
+interface AskErrorPayload {
+  error?: string;
+  message?: string;
+}
+
 const starterExamples = [
   'Bluetooth controlled rover with obstacle avoidance',
   'Line follower robot with speed tuning and test checklist',
@@ -183,7 +189,7 @@ export default function Home() {
   const [historySessions, setHistorySessions] = useState<ChatSession[]>([]);
   const [historySearch, setHistorySearch] = useState('');
   const [historyBoardFilter, setHistoryBoardFilter] = useState('All');
-  const [activeTab, setActiveTab] = useState<'code' | 'secondary' | 'wiring' | 'guide' | 'upload' | 'test' | 'sim' | 'learn' | 'shop' | 'report' | 'quiz' | 'explain' | 'present'>('code');
+  const [activeTab, setActiveTab] = useState<'code' | 'secondary' | 'wiring' | 'guide' | 'upload' | 'test' | 'sim' | 'learn' | 'shop' | 'report' | 'quiz' | 'explain' | 'present' | 'ask'>('code');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isProUser, setIsProUser] = useState(false);
@@ -196,6 +202,9 @@ export default function Home() {
   const [presentationSlideIndex, setPresentationSlideIndex] = useState(0);
   const [isPresentationFullscreen, setIsPresentationFullscreen] = useState(false);
   const [currency, setCurrency] = useState<Currency>('INR');
+  const [tutorQuestion, setTutorQuestion] = useState('');
+  const [tutorAnswer, setTutorAnswer] = useState('');
+  const [tutorLoading, setTutorLoading] = useState(false);
 
   const handleCurrencyChange = (newCurrency: Currency) => {
     setCurrency(newCurrency);
@@ -222,6 +231,8 @@ export default function Home() {
     setQuizAnswers({});
     setPresentationSlideIndex(0);
     setIsPresentationFullscreen(false);
+    setTutorQuestion('');
+    setTutorAnswer('');
   }, []);
 
   const fetchSidebarHistory = useCallback(async (userId: string) => {
@@ -915,6 +926,48 @@ ${data.secondary_code}
     }
   };
 
+  const askCircuitAI = async (questionOverride?: string) => {
+    const questionToAsk = (questionOverride || tutorQuestion).trim();
+    if (!questionToAsk) return;
+
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    setTutorLoading(true);
+    setTutorAnswer('');
+    if (questionOverride) setTutorQuestion(questionOverride);
+
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch('/api/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          question: questionToAsk,
+          activeTab,
+          projectData: data,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorPayload = (await response.json().catch(() => ({}))) as AskErrorPayload;
+        throw new Error(errorPayload.message || errorPayload.error || 'CircuitAI Tutor could not answer that yet.');
+      }
+
+      const result = (await response.json()) as { answer?: string };
+      setTutorAnswer(result.answer || 'I could not find a helpful answer for that question.');
+    } catch (error) {
+      setTutorAnswer(error instanceof Error ? error.message : 'CircuitAI Tutor failed to answer. Please try again.');
+    } finally {
+      setTutorLoading(false);
+    }
+  };
+
   const downloadPresentation = () => {
     if (!data) return;
 
@@ -1215,6 +1268,41 @@ ${data.secondary_code}
                   ))}
                 </div>
 
+                <section className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-5">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><Sparkles className="h-4 w-4" /> Ask CircuitAI</h3>
+                      <p className="mt-2 text-sm text-zinc-400">Ask how CircuitAI works, what Pro unlocks, how teacher mode helps, or how to start a robotics project.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {['How do I use teacher mode?', 'What are the free limits?', 'How do I make my project safe?'].map((question) => (
+                        <button key={question} type="button" onClick={() => askCircuitAI(question)} className="rounded-md border border-zinc-800 bg-zinc-950 px-2.5 py-1.5 text-[11px] text-zinc-400 hover:border-teal-800 hover:text-teal-300 transition">
+                          {question}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <form onSubmit={(event) => { event.preventDefault(); void askCircuitAI(); }} className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <input
+                      type="text"
+                      value={tutorQuestion}
+                      onChange={(event) => setTutorQuestion(event.target.value)}
+                      placeholder="Ask about CircuitAI, Pro, project safety, upload guides..."
+                      className="h-11 min-w-0 flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-4 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-teal-500"
+                    />
+                    <button type="submit" disabled={tutorLoading || !tutorQuestion.trim()} className="h-11 px-4 rounded-lg bg-teal-600 text-xs font-bold uppercase text-white hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 flex items-center justify-center gap-2 transition">
+                      {tutorLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Ask
+                    </button>
+                  </form>
+
+                  {(tutorAnswer || tutorLoading) && (
+                    <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap">
+                      {tutorLoading ? 'CircuitAI is thinking...' : tutorAnswer}
+                    </div>
+                  )}
+                </section>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   <div className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-4">
                     <h3 className="text-sm font-black text-zinc-100 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-teal-300" /> Free</h3>
@@ -1295,7 +1383,7 @@ ${data.secondary_code}
                   <div className="mt-4 grid grid-cols-1 gap-3 border-t border-zinc-800 pt-4 lg:grid-cols-3">
                     {[
                       { label: 'Build', tabs: [['code', 'Code'], ['wiring', 'Wiring'], ['guide', 'Assembly'], ['upload', 'Upload'], ['test', 'Test']] },
-                      { label: 'Study', tabs: [['explain', 'Explain'], ['learn', 'Learn'], ['sim', 'Sim'], ['quiz', 'Quiz']] },
+                      { label: 'Study', tabs: [['ask', 'Ask'], ['explain', 'Explain'], ['learn', 'Learn'], ['sim', 'Sim'], ['quiz', 'Quiz']] },
                       { label: 'Output', tabs: [['shop', 'Shop'], ['present', 'Slides'], ['report', 'Report'], ...(data.secondary_code ? [['secondary', 'Companion']] : [])] },
                     ].map((group) => (
                       <div key={group.label}>
@@ -1562,6 +1650,62 @@ ${data.secondary_code}
                       </div>
                     </div>
                   )
+                )}
+
+                {activeTab === 'ask' && (
+                  <div className="space-y-4">
+                    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                          <h3 className="text-teal-300 font-bold uppercase tracking-wider text-xs flex items-center gap-2"><Sparkles className="h-4 w-4" /> Ask CircuitAI</h3>
+                          <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">Tutor for this project</h2>
+                          <p className="mt-2 text-sm text-zinc-400">Ask about the open project&apos;s code, wiring, parts, upload guide, safety, quiz, simulation, or teacher report.</p>
+                        </div>
+                        <span className="rounded-md border border-teal-800 bg-teal-950/40 px-2.5 py-1 text-[10px] font-bold uppercase text-teal-300">
+                          Project aware
+                        </span>
+                      </div>
+
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {[
+                          'Explain this code like I am a beginner.',
+                          'Check the safety risks in this project.',
+                          'How should I upload this to the board?',
+                          'Ask me viva questions from this project.',
+                          'What parts should I buy first?',
+                        ].map((question) => (
+                          <button key={question} type="button" onClick={() => askCircuitAI(question)} className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-400 hover:border-teal-800 hover:text-teal-300 transition">
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <form onSubmit={(event) => { event.preventDefault(); void askCircuitAI(); }} className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4">
+                      <label className="block text-[11px] font-bold uppercase tracking-widest text-teal-300 mb-2">Question</label>
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <input
+                          type="text"
+                          value={tutorQuestion}
+                          onChange={(event) => setTutorQuestion(event.target.value)}
+                          placeholder="Example: Why is common ground important in this wiring?"
+                          className="h-11 min-w-0 flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-4 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-teal-500"
+                        />
+                        <button type="submit" disabled={tutorLoading || !tutorQuestion.trim()} className="h-11 px-4 rounded-lg bg-teal-600 text-xs font-bold uppercase text-white hover:bg-teal-500 disabled:bg-zinc-800 disabled:text-zinc-500 flex items-center justify-center gap-2 transition">
+                          {tutorLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Ask
+                        </button>
+                      </div>
+                    </form>
+
+                    {(tutorAnswer || tutorLoading) && (
+                      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">CircuitAI Answer</h3>
+                        <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
+                          {tutorLoading ? 'CircuitAI is thinking...' : tutorAnswer}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {activeTab === 'explain' && (
