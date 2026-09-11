@@ -1,4 +1,4 @@
-export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['authenticated', 'active', 'pending', 'trial']);
+export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['authenticated', 'active', 'trial']);
 
 export const ENDED_SUBSCRIPTION_STATUSES = new Set([
   'cancelled',

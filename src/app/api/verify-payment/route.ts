@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { requireAuthUser } from '@/lib/server/auth';
 import { getRazorpayKeySecret } from '@/lib/server/razorpay';
 import { activateProSubscription } from '@/lib/server/subscription';
+import { adminDb } from '@/lib/firebaseAdmin';
 
 interface VerifySubscriptionBody {
   razorpay_subscription_id?: string;
@@ -58,14 +59,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Invalid payment signature.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
+    const userRef = adminDb.collection('users').doc(user.uid);
+    const userDoc = await userRef.get();
+    const userData = userDoc.data();
+
     if (isYearly) {
+      if (userData?.pendingOrderId && userData.pendingOrderId !== razorpay_order_id) {
+        return NextResponse.json(
+          { success: false, error: 'Payment order does not match this account.' },
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       // For one-time yearly payment, activate Pro for 1 year
       const currentPeriodEnd = new Date();
       currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
-      
-      const { adminDb } = await import('@/lib/firebaseAdmin');
-      const userRef = adminDb.collection('users').doc(user.uid);
-      
+
       await userRef.set({
         isPro: true,
         subscriptionStatus: 'active',
@@ -76,6 +85,13 @@ export async function POST(req: Request) {
         pendingOrderId: null, // Clear pending order
       }, { merge: true });
     } else {
+      if (userData?.subscriptionId && userData.subscriptionId !== razorpay_subscription_id) {
+        return NextResponse.json(
+          { success: false, error: 'Payment subscription does not match this account.' },
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       // For monthly subscription
       await activateProSubscription(user.uid, {
         subscriptionId: razorpay_subscription_id!,
@@ -84,8 +100,6 @@ export async function POST(req: Request) {
       });
       
       // Also set billing cycle for monthly
-      const { adminDb } = await import('@/lib/firebaseAdmin');
-      const userRef = adminDb.collection('users').doc(user.uid);
       await userRef.set({
         subscriptionBillingCycle: 'monthly',
       }, { merge: true });

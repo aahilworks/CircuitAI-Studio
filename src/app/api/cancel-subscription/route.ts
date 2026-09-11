@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuthUser } from '@/lib/server/auth';
 import { getRazorpayClient } from '@/lib/server/razorpay';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { hasActiveProAccess } from '@/lib/proAccess';
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const userDoc = await userRef.get();
     const userData = userDoc.data();
 
-    if (!userData?.isPro) {
+    if (!hasActiveProAccess(userData)) {
       return NextResponse.json({ error: 'No active Pro subscription found.' }, { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
@@ -26,7 +27,10 @@ export async function POST(request: Request) {
         await razorpay.subscriptions.cancel(userData.subscriptionId);
       } catch (error) {
         console.error('Failed to cancel Razorpay subscription:', error);
-        // Continue with Firebase update even if Razorpay cancellation fails
+        return NextResponse.json(
+          { error: 'Could not cancel subscription with Razorpay. Please try again.' },
+          { status: 502, headers: { 'Content-Type': 'application/json' } }
+        );
       }
     }
 

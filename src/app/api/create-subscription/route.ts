@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuthUser } from '@/lib/server/auth';
-import { getRazorpayClient, getRazorpayPlanId, getTrialDays } from '@/lib/server/razorpay';
+import { getRazorpayClient, getRazorpayPlanId } from '@/lib/server/razorpay';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { hasActiveProAccess } from '@/lib/proAccess';
 import { Currency } from '@/lib/currency';
