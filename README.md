@@ -36,7 +36,7 @@ See the [LICENSE](LICENSE) file for the complete license agreement.
 - AI-generated robotics project packs for Arduino, ESP32, Raspberry Pi Pico, and similar boards
 - Saved project history per signed-in Firebase user
 - Free-plan usage limits and Pro status stored in Firestore
-- Razorpay subscription checkout for Pro upgrades (monthly, 2-day trial)
+- Razorpay subscription checkout for Pro upgrades (monthly, yearly)
 - Downloadable `firmware.ino`, companion script, and Markdown project pack
 - Student-friendly sections for testing, troubleshooting, learning goals, and next upgrades
 
