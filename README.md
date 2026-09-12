@@ -19,7 +19,9 @@ You may NOT:
 - Use this software to compete with CircuitAI or AahilWorks
 - Use any portion of this code in your own projects without explicit written permission
 - Republish the source code in any form (public or private repositories, websites, etc.)
-- Don't use this code for local or personal use Or your account may get banned.
+- Use this code for local or personal use (Or your account may get banned).
+
+Request:
 - Code is only Public For Bug reporting and Check for privacy of user.
 - This Is a Kind Request please don't misuse this tool.
 
